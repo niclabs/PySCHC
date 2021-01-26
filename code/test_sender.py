@@ -23,6 +23,17 @@ def data_to_send() -> bytes:
     regular.add_padding()
     print("Send: {}".format(regular.as_bytes()[0] + regular.as_bytes()[1]))
     print(regular.as_text())
+    from schc_messages import All1SCHCFragment
+    all1 = All1SCHCFragment(20, protocol=SCHCProtocol.LoRaWAN,
+                            dtag=8, w=2, rcs='0xacde3214')
+    all1.add_tile(Tile(b'Hello'))
+    all1.add_padding()
+    print(all1.as_text())
+    from schc_messages import SCHCAck
+    ack = SCHCAck(20, protocol=SCHCProtocol.LoRaWAN,
+                  dtag=17, w=1, c=False, bitmap=[True] * 63)
+    ack.add_padding()
+    print(ack.as_bits())
     return regular.as_bytes()[0] + regular.as_bytes()[1]
 
 

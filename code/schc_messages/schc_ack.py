@@ -7,11 +7,63 @@ from schc_messages import SCHCMessage
 class SCHCAck(SCHCMessage):
     """
     SCHC Ack Class
+
+    |---- SCHC ACK Header ----|
+             |--T---|-M-|--1--|Compressed Bitmap|
+    +--------+------+---+-----+-----------------+--------------------+
+    | RuleID | Dtag | W |  C  |Compressed Bitmap| padding (as needed)|
+    +--------+------+---+-----+-----------------+--------------------+
     """
 
     def __init__(self, rule_id: int, c: bool, protocol: int = 1, dtag: int = None,
-                 w: int = None, bitmap_compressed: List[bool] = None) -> None:
-        assert (w is None or c) or bitmap_compressed is not None,\
+                 w: int = None, bitmap: List[bool] = None) -> None:
+        assert (w is None or c) or bitmap is not None,\
             "If windows are used and c is True, bitmap must be specified"
         super().__init__(rule_id=rule_id, protocol=protocol, dtag=dtag,
-                         w=w, c=c, bitmap_compressed=None if c else bitmap_compressed)
+                         w=w, c=c, bitmap=bitmap)
+        self.compress_bitmap()
+
+    def as_bits(self) -> str:
+        """
+        Bits sequence representation
+
+        Returns
+        -------
+        str :
+            Bits sequence in a string
+        """
+        return self.header.as_bits() + self.padding.as_bits()
+
+    def compress_bitmap(self) -> None:
+        """
+        Compress Bitmap of ACK Message
+
+        Returns
+        -------
+        Alter self (bitmap)
+        """
+        temporary_message = self.as_bits()
+        no_bitmap_header_length = len(temporary_message) - self.header.compressed_bitmap.window_size
+        scissor = len(temporary_message)
+        while temporary_message[scissor - 1] == "1" and scissor > no_bitmap_header_length:
+            scissor -= 1
+        while scissor % self.protocol.L2_WORD != 0 and scissor > no_bitmap_header_length:
+            scissor += 1
+        compress_bitmap = temporary_message[no_bitmap_header_length:scissor]
+        compress_bitmap = [True if bit == "1" else False for bit in compress_bitmap]
+        self.header.compressed_bitmap.bitmap = compress_bitmap
+        self.header.compressed_bitmap.size = len(compress_bitmap)
+        self.header.size = scissor
+        self.size = scissor
+        return
+
+    def as_text(self) -> str:
+        """
+        Writes ACK message with specifications
+
+        Returns
+        -------
+        str :
+            SCHC ACK Message as text format
+        """
+        return ""

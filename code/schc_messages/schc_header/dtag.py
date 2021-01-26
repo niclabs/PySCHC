@@ -30,6 +30,8 @@ class DTag(SCHCField):
         super().__init__()
         self.dtag = dtag
         self.t = t
+        self.size = self.t
+        return
 
     def as_bits(self) -> str:
         """

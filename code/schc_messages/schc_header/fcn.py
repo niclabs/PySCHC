@@ -33,6 +33,8 @@ class FragmentedCompressedNumber(SCHCField):
         assert int(log(63, 2)) + 1 <= n, "FCN must be representable for {} bits".format(n)
         self.fcn = fcn
         self.n = n
+        self.size = self.n
+        return
 
     def as_bits(self) -> str:
         """

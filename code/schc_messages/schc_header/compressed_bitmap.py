@@ -37,6 +37,8 @@ class CompressedBitmap(SCHCField):
         self.window_size = window_size
         for _ in range(self.window_size - len(self.bitmap)):
             self.bitmap.append(False)
+        self.size = self.window_size
+        return
 
     def as_bits(self) -> str:
         """

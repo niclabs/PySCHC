@@ -24,6 +24,7 @@ class IntegrityCheck(SCHCField):
         """
         super().__init__()
         self.c = c
+        self.size = 1
 
     def as_bits(self) -> str:
         """

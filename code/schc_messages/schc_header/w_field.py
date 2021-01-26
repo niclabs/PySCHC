@@ -30,6 +30,8 @@ class WField(SCHCField):
         super().__init__()
         self.w = w
         self.m = m
+        self.size = self.m
+        return
 
     def as_bits(self) -> str:
         """

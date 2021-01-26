@@ -60,16 +60,65 @@ class SCHCFragment(SCHCMessage, ABC):
         self.size = self.header.size + payload_size + self.padding.size
         return self.size
 
-    @abstractmethod
-    def as_text(self) -> str:
+    def as_bits(self) -> str:
         """
-        Writes SCHC Fragment as text
+        Bits sequence representation
 
         Returns
         -------
         str :
-            Fragment as format text
+            Bits sequence in a string
         """
-        text = super().as_text()
-        spaces = " " * (max(len(self.header.rule_id.as_bits()), 8) + 1)
-        return text + "\n" + spaces
+        return self.header.as_bits() + self.payload.as_bits() + self.padding.as_bits()
+
+    def as_text(self) -> str:
+        """
+        Writes message with specifications
+
+        Returns
+        -------
+        str :
+            SCHC Message as text format
+        """
+        header_text = "|--- SCHC Fragment Header {}---|\n"
+        second_header = " " * (max(len(self.header.rule_id.as_bits()), 8) + 1) + "|"
+        text_tags = "| RuleID "
+        content_text = "|{}".format(self.header.rule_id.as_bits())
+        if len(content_text) >= len(text_tags):
+            text_tags += " " * (len(content_text) - len(text_tags)) + "|"
+            content_text += "|"
+        else:
+            text_tags += "|"
+            content_text += " " * (len(text_tags) - len(content_text)) + "|"
+        fields = [
+            self.header.dtag,
+            self.header.w,
+            self.header.fcn,
+            self.header.rcs,
+        ]
+        for field in fields:
+            if field.size != 0:
+                text_size, tag, content = field.format_text()
+                second_header += text_size + "|"
+                text_tags += tag + "|"
+                content_text += content + "|"
+        if len(second_header) > 30:
+            header_text = header_text.format(" " * (len(second_header) - 30))
+        else:
+            header_text = header_text.format("")
+        if self.payload.size >= 18:
+            text_tags += " Fragment Payload " + " " * (self.payload.size - 18) + "|"
+            content_text += self.payload.as_bits() + "|"
+        else:
+            text_tags += " Fragment Payload " + "|"
+            content_text += self.payload.as_bits() + " " * (18 - self.payload.size) + "|"
+        if self.padding.size != 0:
+            if self.padding.size >= 9:
+                text_tags += " padding " + " " * (self.padding.size - 9) + "|"
+                content_text += self.padding.as_bits() + "|"
+            else:
+                text_tags += " padding " + "|"
+                content_text += self.padding.as_bits() + " " * (9 - self.padding.size) + "|"
+        return "{}{}\n{}\n{}".format(header_text, second_header,
+                                     text_tags, content_text)
+

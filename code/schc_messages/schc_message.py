@@ -136,5 +136,4 @@ class SCHCMessage(SCHCObject, ABC):
         str :
             SCHC Message as text format
         """
-        header_text = "|--- SCHC Fragment Header {}---|"
-        return header_text
+        pass
