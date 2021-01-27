@@ -35,4 +35,6 @@ class All1SCHCFragment(SCHCFragment):
         super().__init__(rule_id, protocol=protocol, dtag=dtag, w=w, rcs=rcs)
         self.header.fcn = FragmentedCompressedNumber(int(2**self.protocol.N) - 1,
                                                      self.protocol.N)
+        self.header.size += self.header.fcn.size
+        self.size += self.header.fcn.size
         return

@@ -1,6 +1,6 @@
 """compressed_bitmap: Compressed Bitmap Class"""
 
-from typing import List
+from typing import List, Tuple
 from schc_messages.schc_header import SCHCField
 
 
@@ -56,3 +56,28 @@ class CompressedBitmap(SCHCField):
             else:
                 out += "0"
         return out
+
+    def format_text(self) -> Tuple[str, str, str]:
+        """
+        Gets format text to write message as text
+
+        Returns
+        -------
+        str :
+            Size of Compressed bitmap, this can be before of after compression
+        str :
+            Name of field: Compressed Bitmap
+        content :
+            Content in bits
+        """
+        if self.size != 0:
+            print("bitmap")
+            content = self.as_bits()
+            if len(content) >= 19:
+                tag = " Compressed Bitmap " + " " * (len(content) - 19)
+            else:
+                tag = " Compressed Bitmap "
+                content += " " * (19 - len(content))
+            return "", tag, content
+        else:
+            return super().format_text()

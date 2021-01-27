@@ -79,14 +79,9 @@ class SCHCMessage(SCHCObject, ABC):
         """
         pass
 
-    def as_bytes(self, **kwargs) -> Tuple[bytes, ...]:
+    def as_bytes(self) -> Tuple[bytes, ...]:
         """
         Returns a tuple of bytes of the SCHCMessage
-
-        Other Parameters
-        ----------------
-        kwargs :
-            To be implemented for class that extends this class
 
         Returns
         -------
@@ -111,7 +106,7 @@ class SCHCMessage(SCHCObject, ABC):
 
     def add_padding(self) -> int:
         """
-        Adds padding to match MTU
+        Adds padding to match L2 word size
 
         Returns
         -------
@@ -137,3 +132,66 @@ class SCHCMessage(SCHCObject, ABC):
             SCHC Message as text format
         """
         pass
+
+    def base_as_text(self, header_text: str) -> str:
+        """
+        Base to use for all message to simplify implementation
+        of as_text() method
+
+        Parameters
+        ----------
+        header_text : str
+            Text to show on the header. Title of the message
+
+        Returns
+        -------
+        str :
+            SCHC Message as text format
+        """
+        second_header = " " * (max(len(self.header.rule_id.as_bits()), 8) + 1) + "|"
+        text_tags = "| RuleID "
+        content_text = "|{}".format(self.header.rule_id.as_bits())
+        if len(content_text) >= len(text_tags):
+            text_tags += " " * (len(content_text) - len(text_tags)) + "|"
+            content_text += "|"
+        else:
+            text_tags += "|"
+            content_text += " " * (len(text_tags) - len(content_text)) + "|"
+        fields = [
+            self.header.dtag,
+            self.header.w,
+            self.header.fcn,
+            self.header.rcs,
+            self.header.c,
+        ]
+        for field in fields:
+            if field.size != 0:
+                text_size, tag, content = field.format_text()
+                second_header += text_size + "|"
+                text_tags += tag + "|"
+                content_text += content + "|"
+        header_length = len(header_text) - 3
+        if len(second_header) > header_length:
+            header_text = header_text.format(" " * (len(second_header) - header_length))
+        else:
+            header_text = header_text.format("")
+        if self.header.compressed_bitmap.size != 0:
+            _, tag, bitmap = self.header.compressed_bitmap.format_text()
+            text_tags += tag + "|"
+            content_text += bitmap + "|"
+        if self.payload.size != 0:
+            if self.payload.size >= 18:
+                text_tags += " Fragment Payload " + " " * (self.payload.size - 18) + "|"
+                content_text += self.payload.as_bits() + "|"
+            else:
+                text_tags += " Fragment Payload " + "|"
+                content_text += self.payload.as_bits() + " " * (18 - self.payload.size) + "|"
+        if self.padding.size != 0:
+            if self.padding.size >= 9:
+                text_tags += " padding " + " " * (self.padding.size - 9) + "|"
+                content_text += self.padding.as_bits() + "|"
+            else:
+                text_tags += " padding " + "|"
+                content_text += self.padding.as_bits() + " " * (9 - self.padding.size) + "|"
+        return "{}{}\n{}\n{}".format(header_text, second_header,
+                                     text_tags, content_text)

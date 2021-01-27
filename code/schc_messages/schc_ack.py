@@ -66,4 +66,5 @@ class SCHCAck(SCHCMessage):
         str :
             SCHC ACK Message as text format
         """
-        return ""
+        header_text = "|-- SCHC ACK Header {}--|\n"
+        return self.base_as_text(header_text)
