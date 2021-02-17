@@ -51,10 +51,7 @@ class IntegrityCheck(SCHCField):
         content :
             Content in bits
         """
-        if self.size == 1:
-            text_size = " 1 "
-            tag = " C "
-            content = " {} ".format(self.as_bits())
-            return text_size, tag, content
-        else:
-            return super().format_text()
+        text_size = " 1 "
+        tag = " C "
+        content = " {} ".format(self.as_bits())
+        return text_size, tag, content

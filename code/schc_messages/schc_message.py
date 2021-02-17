@@ -4,7 +4,8 @@ from __future__ import annotations
 import logging
 from abc import ABC, abstractmethod
 from typing import Tuple
-from schc_base import SCHCObject, SCHCProtocol
+from schc_base import SCHCObject
+from schc_protocols import get_protocol, SCHCProtocol
 from schc_messages import SCHCHeader, SCHCPayload, SCHCPadding
 
 
@@ -53,7 +54,7 @@ class SCHCMessage(SCHCObject, ABC):
         self.header = SCHCHeader(rule_id, protocol=protocol, **kwargs)
         self.payload = SCHCPayload()
         self.padding = SCHCPadding()
-        self.protocol = SCHCProtocol(protocol, rule_id=rule_id)
+        self.protocol = get_protocol(protocol, rule_id=rule_id)
         self.size = sum([
             self.header.size,
             self.payload.size,
@@ -116,7 +117,7 @@ class SCHCMessage(SCHCObject, ABC):
         last_word_size = self.size % self.protocol.L2_WORD
         if last_word_size == 0:
             logging.debug("No padding added")
-            return 0
+            return self.size
         pad_size = self.padding.add(self.protocol.L2_WORD - last_word_size)
         self.size = self.header.size + self.payload.size + pad_size
         return self.size

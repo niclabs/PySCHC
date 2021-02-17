@@ -1,5 +1,6 @@
 """regular_schc_fragment: Regular SCHCFragment Concrete Class"""
-from schc_base import SCHCProtocol, Tile
+from schc_base import Tile
+from schc_protocols import get_protocol
 from schc_messages import SCHCFragment, SCHCMessage
 
 
@@ -51,11 +52,11 @@ class RegularSCHCFragment(SCHCFragment):
         SCHCMessage :
             An new instance of Regular SCHC Fragment
         """
-        protocol_to_use = SCHCProtocol(protocol=protocol)
+        protocol_to_use = get_protocol(protocol)
         bits_received = SCHCMessage.bytes_2_bits(received)
         pointer = protocol_to_use.RULE_SIZE
         rule_id = int(bits_received[0:pointer], 2)
-        protocol_to_use = SCHCProtocol(protocol=protocol, rule_id=rule_id)
+        protocol_to_use.set_rule_id(rule_id=rule_id)
         dtag = bits_received[pointer:pointer+protocol_to_use.T]
         pointer += protocol_to_use.T
         if dtag == "":

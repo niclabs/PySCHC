@@ -1,5 +1,5 @@
 """all_1_schc_fragment: All1SCHCFragment Concrete Class"""
-from schc_base import SCHCProtocol
+
 from schc_messages import SCHCFragment
 from schc_messages.schc_header import FragmentedCompressedNumber
 

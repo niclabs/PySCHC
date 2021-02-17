@@ -62,10 +62,15 @@ class DTag(SCHCField):
         """
         if self.t != 0:
             text_size = " T={} ".format(self.t)
+            if len(text_size) < 6:
+                text_size += " "
             content = self.as_bits()
             if len(content) < len(text_size):
                 content += " " * (len(text_size) - len(content))
-            tag = " DTag " + " " * (len(text_size) - 6)
+                tag = " DTag "
+            else:
+                text_size += " " * (len(content) - len(text_size))
+                tag = " DTag " + " " * (len(text_size) - 6)
             return text_size, tag, content
         else:
             return super().format_text()

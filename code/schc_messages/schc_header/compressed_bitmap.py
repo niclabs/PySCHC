@@ -71,7 +71,6 @@ class CompressedBitmap(SCHCField):
             Content in bits
         """
         if self.size != 0:
-            print("bitmap")
             content = self.as_bits()
             if len(content) >= 19:
                 tag = " Compressed Bitmap " + " " * (len(content) - 19)

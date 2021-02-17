@@ -1,9 +1,9 @@
 """rule_id: RuleId Class"""
 
-import struct
 from math import log
 from typing import Tuple
-from schc_base import SCHCObject, SCHCProtocol
+from schc_base import SCHCObject
+from schc_protocols import get_protocol
 
 
 class RuleID(SCHCObject):
@@ -31,7 +31,7 @@ class RuleID(SCHCObject):
         """
         super().__init__()
         self.rule_id = rule_id
-        self.protocol = SCHCProtocol(protocol, rule_id=rule_id)
+        self.protocol = get_protocol(protocol, rule_id=rule_id)
         self.size = self.protocol.RULE_SIZE
         assert log(self.rule_id, 2) + 1 <= self.size, "Rule ID uncodified on this specified protocol"
 

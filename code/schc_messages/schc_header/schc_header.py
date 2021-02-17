@@ -1,7 +1,7 @@
 """schc_header: SCHC Header Class"""
 
-from typing import Tuple
-from schc_base import SCHCProtocol, SCHCObject
+from schc_base import SCHCObject
+from schc_protocols import get_protocol
 from schc_messages.schc_header import SCHCField, SCHCNullField
 from schc_messages.schc_header import RuleID, DTag, WField, FragmentedCompressedNumber
 from schc_messages.schc_header import ReassemblyCheckSequence, IntegrityCheck, CompressedBitmap
@@ -61,7 +61,7 @@ class SCHCHeader(SCHCObject):
         """
         super().__init__()
         self.rule_id = RuleID(rule_id, protocol=protocol)
-        self.protocol = SCHCProtocol(protocol, rule_id=rule_id)
+        self.protocol = get_protocol(protocol, rule_id=rule_id)
         self.dtag = SCHCNullField()
         self.w = SCHCNullField()
         self.fcn = SCHCNullField()

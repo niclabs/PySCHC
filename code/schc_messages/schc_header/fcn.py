@@ -30,7 +30,8 @@ class FragmentedCompressedNumber(SCHCField):
             Size of FCN in bits (given according to rule_id)
         """
         super().__init__()
-        assert int(log(63, 2)) + 1 <= n, "FCN must be representable for {} bits".format(n)
+        if fcn != 0:
+            assert int(log(fcn, 2)) + 1 <= n, "FCN must be representable for {} bits".format(n)
         self.fcn = fcn
         self.n = n
         self.size = self.n
@@ -45,7 +46,10 @@ class FragmentedCompressedNumber(SCHCField):
         str :
             Bit representation
         """
-        return "{:0b}".format(self.fcn).zfill(self.n)
+        if self.n != 0:
+            return "{:0b}".format(self.fcn).zfill(self.n)
+        else:
+            return ""
 
     def format_text(self) -> Tuple[str, str, str]:
         """
@@ -61,10 +65,13 @@ class FragmentedCompressedNumber(SCHCField):
             Content in bits
         """
         if self.n != 0:
-            text_size = "--- N={} ---".format(self.n)
+            text_size = "--- N={} ".format(self.n) + "{}---"
             content = self.as_bits()
-            if len(content) < len(text_size):
+            if len(content) < (len(text_size) - 2):
+                text_size = text_size.format("")
                 content += " " * (len(text_size) - len(content))
+            else:
+                text_size = text_size.format(" " * (len(content) - len(text_size) + 2))
             tag = " FCN " + " " * (len(text_size) - 5)
             return text_size, tag, content
         else:
