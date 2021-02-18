@@ -49,3 +49,25 @@ class SCHCSenderAbort(SCHCMessage):
         """
         header_text = "|- Sender-Abort Header {}-|\n"
         return self.base_as_text(header_text)
+
+    @staticmethod
+    def from_bytes(received: bytes, protocol: int = 1) -> SCHCMessage:
+        """
+        Generates a SCHC Sender Abort instance from bytes
+
+        Parameters
+        ----------
+        received : bytes
+            Bytes received
+        protocol : int
+            Protocol to use from decode received, default LoRaWAN
+
+        Returns
+        -------
+        SCHCMessage :
+            An new instance of SCHC Sender Abort
+        """
+        protocol_to_use, bits_received, pointer, rule_id, dtag, w = SCHCSenderAbort._get_common_(
+            received, protocol=protocol)
+        return SCHCSenderAbort(rule_id, protocol=protocol_to_use.id,
+                               dtag=dtag, w=w)

@@ -1,6 +1,6 @@
 """schc_ack: SCHCAck Class"""
-from typing import List
 
+from typing import List
 from schc_messages import SCHCMessage
 
 
@@ -9,19 +9,35 @@ class SCHCAck(SCHCMessage):
     SCHC Ack Class
 
     |---- SCHC ACK Header ----|
-             |--T---|-M-|--1--|Compressed Bitmap|
+             |--T---|-M-|- 1 -|Compressed Bitmap|
     +--------+------+---+-----+-----------------+--------------------+
     | RuleID | Dtag | W |  C  |Compressed Bitmap| padding (as needed)|
     +--------+------+---+-----+-----------------+--------------------+
     """
 
-    def __init__(self, rule_id: int, c: bool, protocol: int = 1, dtag: int = None,
-                 w: int = None, bitmap: List[bool] = None) -> None:
+    def __init__(self, rule_id: int, protocol: int, c: bool, dtag: int = None,
+                 w: int = None, bitmap: List[bool] = None, compress: bool = True) -> None:
+        """
+        Constructor
+
+        Parameters
+        ----------
+        rule_id
+        protocol
+        c
+        dtag
+        w
+        bitmap
+        compress : bool, optional
+            Whether or not to compress bitmap. Default True.
+            It is recommended to use compress=False if is the result of a parsing
+        """
         assert (w is None or c) or bitmap is not None,\
             "If windows are used and c is True, bitmap must be specified"
         super().__init__(rule_id=rule_id, protocol=protocol, dtag=dtag,
                          w=w, c=c, bitmap=bitmap)
-        self.compress_bitmap()
+        if compress:
+            self.compress_bitmap()
 
     def as_bits(self) -> str:
         """
@@ -68,3 +84,40 @@ class SCHCAck(SCHCMessage):
         """
         header_text = "|-- SCHC ACK Header {}--|\n"
         return self.base_as_text(header_text)
+
+    @staticmethod
+    def from_bytes(received: bytes, protocol: int = 1) -> SCHCMessage:
+        """
+        Generates a SCHCAck instance from bytes
+
+        Parameters
+        ----------
+        received : bytes
+            Bytes received
+        protocol : int
+            Protocol to use from decode received, default LoRaWAN
+
+        Returns
+        -------
+        SCHCMessage :
+            An new instance of SCHC Ack
+        """
+        protocol_to_use, bits_received, pointer, rule_id, dtag, w = SCHCAck._get_common_(received, protocol=protocol)
+        c = bits_received[pointer:pointer + 1] == "1"
+        pointer += 1
+        if c:
+            message = SCHCAck(rule_id, protocol=protocol,
+                              c=c, dtag=dtag, w=w)
+        else:
+            bitmap = bits_received[pointer:]
+            if len(bitmap) > protocol_to_use.WINDOW_SIZE:
+                bitmap = bitmap[0:protocol_to_use.WINDOW_SIZE]
+                bitmap = [i == "1" for i in bitmap]
+                message = SCHCAck(rule_id, protocol=protocol, c=c,
+                                  dtag=dtag, w=w, bitmap=bitmap)
+                message.add_padding()
+            else:
+                bitmap = [i == "1" for i in bitmap]
+                message = SCHCAck(rule_id, protocol=protocol, c=c,
+                                  dtag=dtag, w=w, bitmap=bitmap)
+        return message

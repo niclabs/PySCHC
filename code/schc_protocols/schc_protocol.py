@@ -69,3 +69,23 @@ class SCHCProtocol(ABC):
         """
         self.RULE_ID = rule_id
         return
+
+    @abstractmethod
+    def payload_condition_all1(self, payload: str) -> str:
+        """
+        Payload on All1 SCHC Fragment is specified in each profile,
+        furthermore, this method most be implemented to delete payload
+        or remove padding
+
+        Parameters
+        ----------
+        payload : str
+            Payload received as a binary string
+
+        Returns
+        -------
+        str :
+            Payload without padding, or, in case All-1 has not
+            payload allowed an empty string
+        """
+        return ""

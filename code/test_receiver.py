@@ -20,7 +20,7 @@ def parse_received(received: bytes) -> bytes:
     bytes :
         Returned message
     """
-    from schc_base import SCHCProtocol
+    from schc_protocols import SCHCProtocol
     from schc_messages import RegularSCHCFragment
     regular = RegularSCHCFragment.from_bytes(received, protocol=SCHCProtocol.LoRaWAN)
     print(regular.as_text())

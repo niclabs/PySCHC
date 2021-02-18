@@ -29,14 +29,10 @@ class CompressedBitmap(SCHCField):
         """
         super().__init__()
         assert len(bitmap) <= window_size, "You cannot specified more bitmap than windows"
-        if len(bitmap) < window_size:
-            from warnings import warn
-            warn("Bitmap has less values than windows, this will fill the not specified ones with False",
-                 UserWarning)
         self.bitmap = bitmap
         self.window_size = window_size
         for _ in range(self.window_size - len(self.bitmap)):
-            self.bitmap.append(False)
+            self.bitmap.append(True)
         self.size = self.window_size
         return
 

@@ -97,7 +97,42 @@ class SCHCReceiverAbort(SCHCMessage):
             return
         last_word_size = self.size % self.protocol.L2_WORD
         if last_word_size != 0:
-            self.ones = last_word_size
+            self.ones = self.protocol.L2_WORD - last_word_size
         self.ones += self.protocol.L2_WORD
-        self.size = self.ones
+        self.size += self.ones
         return
+
+    @staticmethod
+    def from_bytes(received: bytes, protocol: int = 1) -> SCHCMessage:
+        """
+        Generates a SCHC Receiver Abort instance from bytes
+
+        Parameters
+        ----------
+        received : bytes
+            Bytes received
+        protocol : int
+            Protocol to use from decode received, default LoRaWAN
+
+        Returns
+        -------
+        SCHCMessage :
+            An new instance of SCHC Receiver Abort
+        """
+        protocol_to_use, bits_received, pointer, rule_id, dtag, w = SCHCReceiverAbort._get_common_(
+            received, protocol=protocol)
+        c = bits_received[pointer:pointer+1] == "1"
+        assert c, "C = 0, Receiver Abort must be ignored"
+        pointer += 1
+        padding = bits_received[pointer:]
+        padding_length = protocol_to_use.L2_WORD - (sum(
+            [protocol_to_use.RULE_SIZE, protocol_to_use.T,
+             protocol_to_use.M, 1]) % protocol_to_use.L2_WORD)
+        padding_length += protocol_to_use.L2_WORD
+        assert padding == "1" * padding_length,\
+            "Ones padding must be {}, got {}, Abort must be ignored".format(
+                "1" * padding_length,
+                padding
+            )
+        return SCHCReceiverAbort(rule_id, protocol=protocol_to_use.id,
+                                 dtag=dtag, w=w)

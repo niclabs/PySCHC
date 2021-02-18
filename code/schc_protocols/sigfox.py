@@ -8,7 +8,6 @@ class Sigfox(SCHCProtocol):
     """
     Sigfox Protocol Class
     """
-
     def __init__(self, rule_id: int = 0) -> None:
         """
         Constructor
@@ -45,3 +44,19 @@ class Sigfox(SCHCProtocol):
         """
         super().set_rule_id(rule_id)
         return
+
+    def payload_condition_all1(self, payload: str) -> str:
+        """
+        Pending...
+
+        Parameters
+        ----------
+        payload : str
+            Payload received as a binary string
+
+        Returns
+        -------
+        str :
+            Pending...
+        """
+        return ""

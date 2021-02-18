@@ -62,6 +62,7 @@ class SCHCMessage(SCHCObject, ABC):
         ])
 
     @staticmethod
+    @abstractmethod
     def from_bytes(received: bytes, protocol: int = 1) -> SCHCMessage:
         """
         Generate an instance of SCHCMessage
@@ -95,7 +96,7 @@ class SCHCMessage(SCHCObject, ABC):
         NotImplemented
             Any other SCHC protocol, but LoRaWAN
         """
-        message = self.header.as_bits() + self.payload.as_bits() + self.padding.as_bits()
+        message = self.as_bits()
         if self.protocol.id == 0:
             return self.bits_2_bytes(message),
         if self.protocol.id == SCHCProtocol.LoRaWAN:
@@ -196,3 +197,49 @@ class SCHCMessage(SCHCObject, ABC):
                 content_text += self.padding.as_bits() + " " * (9 - self.padding.size) + "|"
         return "{}{}\n{}\n{}".format(header_text, second_header,
                                      text_tags, content_text)
+
+    @staticmethod
+    def _get_common_(received: bytes, protocol: int = 1
+                     ) -> Tuple[SCHCProtocol, str, int, int, int, int]:
+        """
+        Generates a dictionary with the common attributes
+        from SCHC Fragment (Regular and All-1)
+
+        received : bytes
+            Bytes received
+        protocol : int
+            Protocol to use from decode received, default LoRaWAN
+
+        Returns
+        -------
+        SCHCProtocol :
+            Protocol to use for parsing
+        str :
+            Bits received, a sequence of 0 as 1 that encode the message received
+        int :
+            An integer representing current point on reading received bits
+        int :
+            Rule ID to use to parse and to specify on SCHC Message
+        int :
+            DTag value (as an integer)
+        int :
+            W value (as an integer)
+        """
+        protocol_to_use = get_protocol(protocol)
+        bits_received = SCHCMessage.bytes_2_bits(received)
+        pointer = protocol_to_use.RULE_SIZE
+        rule_id = int(bits_received[0:pointer], 2)
+        protocol_to_use.set_rule_id(rule_id=rule_id)
+        dtag = bits_received[pointer:pointer+protocol_to_use.T]
+        pointer += protocol_to_use.T
+        if dtag == "":
+            dtag = None
+        else:
+            dtag = int(dtag, 2)
+        w = bits_received[pointer:pointer+protocol_to_use.M]
+        pointer += protocol_to_use.M
+        if w == "":
+            w = None
+        else:
+            w = int(w, 2)
+        return protocol_to_use, bits_received, pointer, rule_id, dtag, w

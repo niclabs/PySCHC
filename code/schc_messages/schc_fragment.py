@@ -1,8 +1,10 @@
 """schc_fragment: SCHCFragment Class"""
 
-from abc import ABC, abstractmethod
+from abc import ABC
+from typing import Dict
 from schc_base import Tile
 from schc_messages import SCHCMessage
+from schc_protocols import get_protocol
 
 
 class SCHCFragment(SCHCMessage, ABC):

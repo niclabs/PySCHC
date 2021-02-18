@@ -1,7 +1,7 @@
 """ schc_parser: SCHCParser class that generate message from bytes """
 
 from schc_protocols import SCHCProtocol
-from schc_messages import SCHCMessage, SCHCAck
+from schc_messages import SCHCMessage
 
 
 class SCHCParser:
@@ -38,11 +38,3 @@ class SCHCParser:
         else:
             raise NotImplementedError("Protocol not available to parse")
         return parse(message)
-
-
-if __name__ == '__main__':
-    from schc_protocols import LoRaWAN
-    SCHCParser.from_bytes(LoRaWAN(), b'\x14\xd1Hello')
-    from schc_protocols import Sigfox
-    protocol = Sigfox()
-    SCHCParser.from_bytes(protocol, b'\x14\xd1Hello')

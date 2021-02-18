@@ -1,4 +1,4 @@
-"""schc_ack_reg: SCHCAckReq Class"""
+"""schc_ack_req: SCHCAckReq Class"""
 
 from schc_messages import SCHCMessage
 from schc_messages.schc_header import FragmentedCompressedNumber
@@ -46,3 +46,28 @@ class SCHCAckReq(SCHCMessage):
         """
         header_text = "|- SCHC ACK REQ Header {}-|\n"
         return self.base_as_text(header_text)
+
+    @staticmethod
+    def from_bytes(received: bytes, protocol: int = 1) -> SCHCMessage:
+        """
+        Generates a SCHCAckReq instance from bytes
+
+        Parameters
+        ----------
+        received : bytes
+            Bytes received
+        protocol : int
+            Protocol to use from decode received, default LoRaWAN
+
+        Returns
+        -------
+        SCHCMessage :
+            An new instance of SCHC Ack Req
+        """
+        protocol_to_use, bits_received, pointer, rule_id, dtag, w = SCHCAckReq._get_common_(received, protocol=protocol)
+        fcn = bits_received[pointer:pointer+protocol_to_use.N]
+        assert fcn == "0" * protocol_to_use.N, "FCN not all-0 in an SCHC Ack Req"
+        message = SCHCAckReq(rule_id, protocol=protocol,
+                             dtag=dtag, w=w)
+        message.add_padding()
+        return message

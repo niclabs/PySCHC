@@ -7,6 +7,9 @@ class LoRaWAN(SCHCProtocol):
     """
     LoRaWAN Protocol Class
     """
+    UPLINK = 20
+    DOWNLINK = 21
+    NOT_POSSIBLE = 22
 
     def __init__(self, rule_id: int = 0) -> None:
         """
@@ -58,22 +61,42 @@ class LoRaWAN(SCHCProtocol):
     def __set_parameters__(self) -> None:
         if self.RULE_ID == 0:
             pass  # To get basic parameters
-        elif self.RULE_ID == 20:  # Uplink
+        elif self.RULE_ID == LoRaWAN.UPLINK:  # Uplink
             self.T = 0  # in bits
             self.M = 2  # in bits
             self.N = 6  # in bits
             self.U = 32  # in bits
             self.WINDOW_SIZE = 63  # 2^(n=6) = 64 - {All-1 fragment}
             self.TILE_SIZE = 10 * 8  # 10 bytes = 80 bits
-        elif self.RULE_ID == 21:  # Downlink
+        elif self.RULE_ID == LoRaWAN.DOWNLINK:  # Downlink
             self.T = 0  # in bits
             self.M = 1  # in bits
             self.N = 1  # in bits
             self.U = 32  # in bits
             self.WINDOW_SIZE = 1  # 2^(n=1) = 2 - {All-1 fragment}
             self.TILE_SIZE = 0  # undefined __a priori__
-        elif self.RULE_ID == 22:
+        elif self.RULE_ID == LoRaWAN.NOT_POSSIBLE:
             raise RuntimeError("Cannot fragment message under LoRaWAN protocol")
         else:
             raise ValueError("Rule ID not defined in protocol")
         return
+
+    def payload_condition_all1(self, payload: str) -> str:
+        """
+        Just one tile is allowed
+
+        payload : str
+            Payload received as a binary string
+
+        Returns
+        -------
+        str :
+            Payload without padding
+        """
+        if payload == "":
+            return ""
+        else:
+            if self.RULE_ID == LoRaWAN.UPLINK:
+                return payload[0: self.TILE_SIZE]
+            elif self.RULE_ID == LoRaWAN.DOWNLINK:
+                return payload
