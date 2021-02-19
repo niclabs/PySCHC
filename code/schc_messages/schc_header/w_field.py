@@ -57,7 +57,7 @@ class WField(SCHCField):
         content :
             Content in bits
         """
-        if self.w != 0:
+        if self.m != 0:
             text_size = "-- M={} --".format(self.m)
             content = self.as_bits()
             if len(content) < len(text_size):

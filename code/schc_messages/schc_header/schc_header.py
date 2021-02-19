@@ -68,17 +68,17 @@ class SCHCHeader(SCHCObject):
         self.rcs = SCHCNullField()
         self.c = SCHCNullField()
         self.compressed_bitmap = SCHCNullField()
-        if kwargs.get("dtag", None):
+        if kwargs.get("dtag", None) is not None:
             self.dtag = DTag(kwargs.get("dtag"), self.protocol.T)
-        if kwargs.get("w", None):
+        if kwargs.get("w", None) is not None:
             self.w = WField(kwargs.get("w"), self.protocol.M)
-        if kwargs.get("fcn", None):
+        if kwargs.get("fcn", None) is not None:
             self.fcn = FragmentedCompressedNumber(kwargs.get("fcn"), self.protocol.N)
-        if kwargs.get("rcs", None):
+        if kwargs.get("rcs", None) is not None:
             self.rcs = ReassemblyCheckSequence(kwargs.get("rcs"), self.protocol.U)
         if kwargs.get("c", None) is not None:
             self.c = IntegrityCheck(kwargs.get("c"))
-        if kwargs.get("bitmap", None):
+        if kwargs.get("bitmap", None) is not None:
             self.compressed_bitmap = CompressedBitmap(kwargs.get("bitmap"), self.protocol.WINDOW_SIZE)
         self.size = sum([
             self.rule_id.size, self.dtag.t, self.w.m,

@@ -58,9 +58,12 @@ class RegularSCHCFragment(SCHCFragment):
         message = RegularSCHCFragment(rule_id, protocol=protocol,
                                       dtag=dtag, w=w, fcn=fcn)
         payload = bits_received[pointer:]
-        if len(payload) % protocol_to_use.TILE_SIZE > 0:
-            padding_size = protocol_to_use.TILE_SIZE - (len(payload) % protocol_to_use.TILE_SIZE)
-            payload = bits_received[pointer:-padding_size]
+        tile_size = protocol_to_use.TILE_SIZE
+        if tile_size == 0:
+            tile_size = 8
+        if len(payload) % tile_size > 0:
+            padding_size = len(payload) % tile_size
+            payload = payload[0:-padding_size]
         message.add_tile(Tile(SCHCMessage.bits_2_bytes(payload)))
         message.add_padding()
         return message

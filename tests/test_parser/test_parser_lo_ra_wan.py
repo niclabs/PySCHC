@@ -21,11 +21,15 @@ class TestParserLoRaWAN(TestCase):
             "SCHCRegular not parsed (uplink mode)"
         )
         # Downlink
-        # TODO
-        expected_regular = None
+        expected_regular = SCHCParser.from_bytes(LoRaWAN(), b'\x15\x12\x00')
         self.assertEqual(
-            None,
-            expected_regular,  # .as_text(),
+            "|--- SCHC Fragment Header   ---|\n" +
+            "         |-- M=1 --|--- N=1 ---|\n" +
+            "| RuleID | W       | FCN       |" +
+            " Fragment Payload | padding |\n" +
+            "|00010101|0        |0          |" +
+            "01001000          |000000   |",
+            expected_regular.as_text(),
             "SCHCRegular not parsed (downlink mode)"
         )
 
@@ -55,16 +59,29 @@ class TestParserLoRaWAN(TestCase):
             "SCHCAll1 not parsed (uplink mode, without payload)"
         )
         # Downlink
-        # TODO
-        expected_all1 = None
+        expected_all1 = SCHCParser.from_bytes(LoRaWAN(), b'\x15k7\x8c\x85\x12\x00')
         self.assertEqual(
-            None,
-            expected_all1,  # .as_text(),
+            "|--- SCHC Fragment Header                                    ---|\n" +
+            "         |-- M=1 --|--- N=1 ---| U=32                           |\n" +
+            "| RuleID | W       | FCN       | RCS                            | Fragment Payload | padding |\n" +
+            "|00010101|0        |1          |10101100110111100011001000010100|0100100000000000  |000000   |",
+            expected_all1.as_text(),
             "SCHCAll1 not parsed (downlink mode)"
         )
 
     def test_ack(self):
         # Uplink
+        # Correct
+        expected_ack = SCHCParser.from_bytes(LoRaWAN(), b'\x14`')
+        self.assertEqual(
+            "|-- SCHC ACK Header  --|\n" +
+            "         |-- M=2 --| 1 |\n" +
+            "| RuleID | W       | C | padding |\n" +
+            "|00010100|01       | 1 |00000    |",
+            expected_ack.as_text(),
+            "SCHC Ack not parsed (uplink mode, correct one)"
+        )
+        # Incorrect
         expected_ack = SCHCParser.from_bytes(LoRaWAN(), b'\x14W')
         self.assertEqual(
             "|-- SCHC ACK Header  --|\n" +
@@ -72,15 +89,28 @@ class TestParserLoRaWAN(TestCase):
             "| RuleID | W       | C | Compressed Bitmap |\n" +
             "|00010100|01       | 0 |10111              |",
             expected_ack.as_text(),
-            "SCHC Ack not parsed (uplink mode)"
+            "SCHC Ack not parsed (uplink mode, incorrect one)"
         )
         # Downlink
-        # TODO
-        expected_ack = None
+        # Correct
+        expected_ack = SCHCParser.from_bytes(LoRaWAN(), b'\x15@')
         self.assertEqual(
-            None,
-            expected_ack,  # .as_text(),
-            "SCHC Ack not parsed (downlink mode)"
+            "|-- SCHC ACK Header  --|\n" +
+            "         |-- M=1 --| 1 |\n" +
+            "| RuleID | W       | C | padding |\n" +
+            "|00010101|0        | 1 |000000   |",
+            expected_ack.as_text(),
+            "SCHC Ack not parsed (downlink mode, correct one)"
+        )
+        # Incorrect
+        expected_ack = SCHCParser.from_bytes(LoRaWAN(), b'\x15 ')
+        self.assertEqual(
+            "|-- SCHC ACK Header  --|\n" +
+            "         |-- M=1 --| 1 |\n" +
+            "| RuleID | W       | C | Compressed Bitmap | padding |\n" +
+            "|00010101|0        | 0 |1                  |00000    |",
+            expected_ack.as_text(),
+            "SCHC Ack not parsed (downlink mode, incorrect one)"
         )
 
     def test_acq_req(self):
@@ -93,14 +123,6 @@ class TestParserLoRaWAN(TestCase):
             "|00010100|01       |000000     |",
             expected_ack_req.as_text(),
             "SCHC ACK Request not parsed (uplink mode)"
-        )
-        # Downlink
-        # TODO
-        expected_ack_req = None
-        self.assertEqual(
-            None,
-            expected_ack_req,  # .as_text(),
-            "SCHC ACK Request not parsed (downlink mode)"
         )
 
     def test_receiver_abort(self):
@@ -115,11 +137,13 @@ class TestParserLoRaWAN(TestCase):
             "SCHC Receiver Abort not parsed (uplink mode)"
         )
         # Downlink
-        # TODO
-        expected_rec_abort = None
+        expected_rec_abort = SCHCParser.from_bytes(LoRaWAN(), b'\x15\xff\xff')
         self.assertEqual(
-            None,
-            expected_rec_abort,  # .as_text(),
+            "| Receiver-Abort Header|\n" +
+            "         |-- M=1 --| 1 |\n" +
+            "| RuleID | W       | C |\n" +
+            "|00010101|1        | 1 |111111|11111111|",
+            expected_rec_abort.as_text(),
             "SCHC Receiver Abort not parsed (downlink mode)"
         )
 

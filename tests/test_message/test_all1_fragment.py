@@ -2,7 +2,8 @@
 
 from unittest import TestCase, main
 from schc_messages import All1SCHCFragment
-from schc_base import SCHCProtocol, Tile
+from schc_base import Tile
+from schc_protocols import SCHCProtocol
 
 
 class TestAll1Fragment(TestCase):
@@ -114,8 +115,7 @@ class TestAll1Fragment(TestCase):
         )
 
     def test_from_bytes(self) -> None:
-        all1 = All1SCHCFragment.from_bytes(b'\x14\xd1Hello')
-        """
+        all1 = All1SCHCFragment.from_bytes(b'\x14\xbf\xac\xde2\x14Hello')
         self.assertEqual(
             "|--- SCHC Fragment Header                                    ---|\n" +
             "         |-- M=2 --|--- N=6 ---| U=32                           |\n" +
@@ -123,10 +123,9 @@ class TestAll1Fragment(TestCase):
             " Fragment Payload                       |\n" +
             "|00010100|10       |111111     |10101100110111100011001000010100|" + 
             "0100100001100101011011000110110001101111|",
-            self.all1.as_text(),
+            all1.as_text(),
             "Message parsed wrong"
         )
-        """
 
 
 if __name__ == '__main__':

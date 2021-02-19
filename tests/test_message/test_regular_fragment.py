@@ -2,7 +2,8 @@
 
 from unittest import TestCase, main
 from schc_messages import RegularSCHCFragment
-from schc_base import SCHCProtocol, Tile
+from schc_base import Tile
+from schc_protocols import SCHCProtocol
 
 
 class TestRegularFragment(TestCase):
@@ -111,12 +112,14 @@ class TestRegularFragment(TestCase):
         )
 
     def test_from_bytes(self) -> None:
-        regular = RegularSCHCFragment.from_bytes(b'\x14\xd1Hello')
+        regular = RegularSCHCFragment.from_bytes(b'\x14\xd1HelloWorld')
         self.assertEqual(
             "|--- SCHC Fragment Header   ---|\n" +
             "         |-- M=2 --|--- N=6 ---|\n" +
-            "| RuleID | W       | FCN       | Fragment Payload                       |\n" +
-            "|00010100|11       |010001     |0100100001100101011011000110110001101111|",
+            "| RuleID | W       | FCN       |" +
+            " Fragment Payload                                                               |\n" +
+            "|00010100|11       |010001     |" +
+            "01001000011001010110110001101100011011110101011101101111011100100110110001100100|",
             regular.as_text(),
             "Message parsed wrong"
         )

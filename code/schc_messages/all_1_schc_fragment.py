@@ -57,8 +57,10 @@ class All1SCHCFragment(SCHCFragment):
         SCHCMessage :
             An new instance of Regular SCHC Fragment
         """
-        protocol_to_use, bits_received, pointer, rule_id, dtag, w = All1SCHCFragment._get_common_(received, protocol=protocol)
+        protocol_to_use, bits_received, pointer, rule_id, dtag, w = All1SCHCFragment._get_common_(
+            received, protocol=protocol)
         fcn = bits_received[pointer:pointer+protocol_to_use.N]
+        print(fcn)
         assert fcn == "1" * protocol_to_use.N, "FCN not all-1 in an All-1 SCHC Fragment"
         pointer += protocol_to_use.N
         rcs = hex(int(bits_received[pointer:pointer+protocol_to_use.U], 2))

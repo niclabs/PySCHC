@@ -24,7 +24,7 @@ class TestCompressedBitmap(TestCase):
     def test_fill_up(self) -> None:
         self.assertEqual(5, len(self.un_bitmap.bitmap), "Filled up length wrong")
         self.assertEqual(
-            [True, False, False, False, False],
+            [True, False, True, True, True],
             self.un_bitmap.bitmap,
             "Filled up values wrong"
         )
@@ -39,7 +39,7 @@ class TestCompressedBitmap(TestCase):
 
     def test_as_bits(self) -> None:
         self.assertEqual("1001", self.bitmap.as_bits(), "Bitmap bits wrong mapped")
-        self.assertEqual("10000", self.un_bitmap.as_bits(), "Filled Up Bitmap bits wrong mapped")
+        self.assertEqual("10111", self.un_bitmap.as_bits(), "Filled Up Bitmap bits wrong mapped")
         self.assertEqual("", self.empty_bitmap.as_bits(), "Empty Bitmap bits wrong mapped")
 
     def test_format_text(self) -> None:
@@ -49,7 +49,7 @@ class TestCompressedBitmap(TestCase):
             "Wrong text generated for Bitmap"
         )
         self.assertEqual(
-            ("", " Compressed Bitmap ", "10000              "),
+            ("", " Compressed Bitmap ", "10111              "),
             self.un_bitmap.format_text(),
             "Wrong text generated for Filled up Bitmap"
         )

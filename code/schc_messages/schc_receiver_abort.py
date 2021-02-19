@@ -121,6 +121,8 @@ class SCHCReceiverAbort(SCHCMessage):
         """
         protocol_to_use, bits_received, pointer, rule_id, dtag, w = SCHCReceiverAbort._get_common_(
             received, protocol=protocol)
+        assert "{:0b}".format(w) == "1" * protocol_to_use.M,\
+            "W != {}, must be all-1, Receiver Abort must be ignored".format("{:0b}".format(w))
         c = bits_received[pointer:pointer+1] == "1"
         assert c, "C = 0, Receiver Abort must be ignored"
         pointer += 1

@@ -58,19 +58,22 @@ class SCHCAck(SCHCMessage):
         -------
         Alter self (bitmap)
         """
-        temporary_message = self.as_bits()
-        no_bitmap_header_length = len(temporary_message) - self.header.compressed_bitmap.window_size
-        scissor = len(temporary_message)
-        while temporary_message[scissor - 1] == "1" and scissor > no_bitmap_header_length:
-            scissor -= 1
-        while scissor % self.protocol.L2_WORD != 0 and scissor > no_bitmap_header_length:
-            scissor += 1
-        compress_bitmap = temporary_message[no_bitmap_header_length:scissor]
-        compress_bitmap = [True if bit == "1" else False for bit in compress_bitmap]
-        self.header.compressed_bitmap.bitmap = compress_bitmap
-        self.header.compressed_bitmap.size = len(compress_bitmap)
-        self.header.size = scissor
-        self.size = scissor
+        if self.header.compressed_bitmap.size == 1:
+            pass
+        else:
+            temporary_message = self.as_bits()
+            no_bitmap_header_length = len(temporary_message) - self.header.compressed_bitmap.window_size
+            scissor = len(temporary_message)
+            while temporary_message[scissor - 1] == "1" and scissor > no_bitmap_header_length:
+                scissor -= 1
+            while scissor % self.protocol.L2_WORD != 0 and scissor > no_bitmap_header_length:
+                scissor += 1
+            compress_bitmap = temporary_message[no_bitmap_header_length:scissor]
+            compress_bitmap = [bit == "1" for bit in compress_bitmap]
+            self.header.compressed_bitmap.bitmap = compress_bitmap
+            self.header.compressed_bitmap.size = len(compress_bitmap)
+            self.header.size = scissor
+            self.size = scissor
         return
 
     def as_text(self) -> str:
@@ -108,6 +111,7 @@ class SCHCAck(SCHCMessage):
         if c:
             message = SCHCAck(rule_id, protocol=protocol,
                               c=c, dtag=dtag, w=w)
+            message.add_padding()
         else:
             bitmap = bits_received[pointer:]
             if len(bitmap) > protocol_to_use.WINDOW_SIZE:

@@ -102,4 +102,22 @@ def __parse_downlink__(message: bytes) -> SCHCMessage:
         SCHCMessage with attributes given by content received
     """
     protocol = LoRaWAN(rule_id=LoRaWAN.DOWNLINK)
-    return
+    bits_received = SCHCMessage.bytes_2_bits(message)
+    length = len(bits_received)
+    assert length % protocol.L2_WORD == 0, "Bits received does not match L2 word"
+    pointer = protocol.RULE_SIZE + protocol.T + protocol.M
+    bit_to_check = bits_received[pointer:pointer + 1]
+    if length == protocol.L2_WORD * 2:
+        return SCHCAck.from_bytes(message, protocol=protocol.id)
+    elif length == protocol.L2_WORD * 3:
+        if bit_to_check == "0":
+            return RegularSCHCFragment.from_bytes(message, protocol=protocol.id)
+        elif bit_to_check == "1":
+            return SCHCReceiverAbort.from_bytes(message, protocol=protocol.id)
+    elif length > protocol.L2_WORD * 3:
+        if bit_to_check == "0":
+            return RegularSCHCFragment.from_bytes(message, protocol=protocol.id)
+        elif bit_to_check == "1":
+            return All1SCHCFragment.from_bytes(message, protocol=protocol.id)
+    else:
+        raise ValueError("Message of unknown type for LoRaWAN SCHC Compression")

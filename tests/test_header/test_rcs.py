@@ -14,7 +14,8 @@ class TestRCS(TestCase):
         -------
         None
         """
-        self.rcs = ReassemblyCheckSequence()
+        # TODO: Pending unit testing of headers
+        # self.rcs = ReassemblyCheckSequence()
 
     def test_wrong_fcn_size(self) -> None:
         self.assertTrue(True)
