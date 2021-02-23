@@ -56,7 +56,7 @@ class SCHCObject(ABC):
         direct = "{:0b}".format(int.from_bytes(content, "big"))
         zeros_missing = len(content) * 8 - len(direct)
         if zeros_missing > 0:
-            return ("0" * zeros_missing) + direct
+            return direct + ("0" * zeros_missing)
         return direct
 
     @staticmethod

@@ -1,6 +1,7 @@
 """ schc_protocol: Class with SCHC Protocols"""
 
 from abc import ABC, abstractmethod
+from schc_base import SCHCObject
 
 
 class SCHCProtocol(ABC):
@@ -51,6 +52,10 @@ class SCHCProtocol(ABC):
         self.U = 0
         self.WINDOW_SIZE = 0
         self.TILE_SIZE = 0
+        self.MAX_ACK_REQUEST = 0
+        self.INACTIVITY_TIMER = 0
+        self.RETRANSMISSION_TIMER = 0
+        return
 
     @abstractmethod
     def set_rule_id(self, rule_id: int) -> None:
@@ -89,3 +94,21 @@ class SCHCProtocol(ABC):
             payload allowed an empty string
         """
         return ""
+
+    @abstractmethod
+    def calculate_rcs(self, packet: str) -> str:
+        """
+        Calculates RCS according to protocol specification
+
+        Parameters
+        ----------
+        packet : str
+            SCHC Packet as binary string
+
+        Returns
+        -------
+        str :
+            Result of Reassembly Check Sequence (RCS)
+        """
+        from binascii import crc32
+        return hex(crc32(SCHCObject.bits_2_bytes(packet)))

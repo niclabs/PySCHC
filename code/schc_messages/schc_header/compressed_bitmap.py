@@ -31,9 +31,7 @@ class CompressedBitmap(SCHCField):
         assert len(bitmap) <= window_size, "You cannot specified more bitmap than windows"
         self.bitmap = bitmap
         self.window_size = window_size
-        for _ in range(self.window_size - len(self.bitmap)):
-            self.bitmap.append(True)
-        self.size = self.window_size
+        self.size = len(bitmap)
         return
 
     def as_bits(self) -> str:

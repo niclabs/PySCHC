@@ -1,6 +1,6 @@
 """tile: Tile class representation"""
-from typing import Tuple
 
+from typing import Tuple, Union
 from schc_base import SCHCObject
 
 
@@ -12,20 +12,34 @@ class Tile(SCHCObject):
     ----------
     content : bytes
         Content of tile
+    encoded_content : bits
+        Content as a string of 0s and 1s
     size : int
         Size in bit
     """
 
-    def __init__(self, content: bytes):
+    def __init__(self, content: Union[bytes, str]) -> None:
         """
 
         Parameters
         ----------
-        content
+        content : bytes or str
+            Tile must contain bytes or be a binary string
         """
         super().__init__()
-        self.content = content
+        if isinstance(content, bytes):
+            self.content = content
+            self.encoded_content = SCHCObject.bytes_2_bits(content)
+        elif isinstance(content, str):
+            unique_chars = list(set(content))
+            if len(unique_chars) != 2 or not ("0" in unique_chars and "1" in unique_chars):
+                raise TypeError("content must be a binary string (just 0s and 1s are allowed)")
+            self.encoded_content = content
+            self.content = SCHCObject.bits_2_bytes(content)
+        else:
+            raise TypeError("content must be bytes or a string of 0s and 1s")
         self.size = len(content) * 8
+        return
 
     def as_bytes(self) -> Tuple[bytes, ...]:
         """
@@ -47,4 +61,4 @@ class Tile(SCHCObject):
         str :
             Bits sequence as text
         """
-        return self.bytes_2_bits(self.content)
+        return self.encoded_content

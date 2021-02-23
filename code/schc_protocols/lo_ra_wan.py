@@ -68,6 +68,9 @@ class LoRaWAN(SCHCProtocol):
             self.U = 32  # in bits
             self.WINDOW_SIZE = 63  # 2^(n=6) = 64 - {All-1 fragment}
             self.TILE_SIZE = 10 * 8  # 10 bytes = 80 bits
+            self.MAX_ACK_REQUEST = 1e6  # TODO
+            self.INACTIVITY_TIMER = 1e6  # in seconds TODO
+            self.RETRANSMISSION_TIMER = 1e6  # in seconds TODO
         elif self.RULE_ID == LoRaWAN.DOWNLINK:  # Downlink
             self.T = 0  # in bits
             self.M = 1  # in bits
@@ -75,6 +78,9 @@ class LoRaWAN(SCHCProtocol):
             self.U = 32  # in bits
             self.WINDOW_SIZE = 1  # 2^(n=1) = 2 - {All-1 fragment}
             self.TILE_SIZE = 0  # undefined __a priori__
+            self.MAX_ACK_REQUEST = 8
+            self.INACTIVITY_TIMER = 12 * 60 * 60  # in seconds (12 hours)
+            self.RETRANSMISSION_TIMER = 30  # in seconds
         elif self.RULE_ID == LoRaWAN.NOT_POSSIBLE:
             raise RuntimeError("Cannot fragment message under LoRaWAN protocol")
         else:
@@ -100,3 +106,19 @@ class LoRaWAN(SCHCProtocol):
                 return payload[0: self.TILE_SIZE]
             elif self.RULE_ID == LoRaWAN.DOWNLINK:
                 return payload
+
+    def calculate_rcs(self, packet: str) -> str:
+        """
+        Calculates RCS according to protocol specification
+
+        Parameters
+        ----------
+        packet : str
+            SCHC Packet as binary string
+
+        Returns
+        -------
+        str :
+            Result of Reassembly Check Sequence (RCS)
+        """
+        return super().calculate_rcs(packet)

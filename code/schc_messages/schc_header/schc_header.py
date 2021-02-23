@@ -56,7 +56,7 @@ class SCHCHeader(SCHCObject):
             RCS computation result
         c : bool or None, optional
             Whether or not the integrity check was successful
-        bitmap : List[bool], optional
+        compressed_bitmap : List[bool], optional
             To report on the receiver bitmap
         """
         super().__init__()
@@ -78,12 +78,12 @@ class SCHCHeader(SCHCObject):
             self.rcs = ReassemblyCheckSequence(kwargs.get("rcs"), self.protocol.U)
         if kwargs.get("c", None) is not None:
             self.c = IntegrityCheck(kwargs.get("c"))
-        if kwargs.get("bitmap", None) is not None:
-            self.compressed_bitmap = CompressedBitmap(kwargs.get("bitmap"), self.protocol.WINDOW_SIZE)
+        if kwargs.get("compressed_bitmap", None) is not None:
+            self.compressed_bitmap = CompressedBitmap(kwargs.get("compressed_bitmap"), self.protocol.WINDOW_SIZE)
         self.size = sum([
             self.rule_id.size, self.dtag.t, self.w.m,
             self.fcn.n, self.rcs.u, len(self.c.as_bits()),
-            self.compressed_bitmap.window_size
+            self.compressed_bitmap.size
         ])
 
     def as_bits(self) -> str:

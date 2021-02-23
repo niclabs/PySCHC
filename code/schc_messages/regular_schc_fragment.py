@@ -15,8 +15,8 @@ class RegularSCHCFragment(SCHCFragment):
     +--------+------+---+-----+------------------+--------------------+
     """
 
-    def __init__(self, rule_id: int, protocol: int = 1,
-                 dtag: int = None, w: int = None, fcn: int = None) -> None:
+    def __init__(self, rule_id: int, fcn: int, protocol: int = 1,
+                 dtag: int = None, w: int = None) -> None:
         """
         Constructor
 

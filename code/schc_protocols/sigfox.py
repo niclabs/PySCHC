@@ -60,3 +60,19 @@ class Sigfox(SCHCProtocol):
             Pending...
         """
         return ""
+
+    def calculate_rcs(self, packet: str) -> str:
+        """
+        Pending
+
+        Parameters
+        ----------
+        packet : str
+            SCHC Packet as binary string
+
+        Returns
+        -------
+        str :
+            Pending...
+        """
+        return ""
