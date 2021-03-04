@@ -33,15 +33,18 @@ class SCHCProtocol(ABC):
     LoRaWAN = 1
     Sigfox = 2
 
-    def __init__(self, rule_id: int = 0) -> None:
+    def __init__(self, __name__: str, rule_id: int = 0) -> None:
         """
         Constructor
 
         Parameters
         ----------
+        __name__: str
+            Protocol name
         rule_id : int, optional
             Specified Rule ID in case Profile is different
         """
+        self.__name__ = __name__
         self.id = 0
         self.RULE_ID = rule_id
         self.RULE_SIZE = 0
@@ -112,3 +115,15 @@ class SCHCProtocol(ABC):
         """
         from binascii import crc32
         return hex(crc32(SCHCObject.bits_2_bytes(packet)))
+
+    @abstractmethod
+    def penultimate_tile(self) -> int:
+        """
+        Penultimate tile condition in case Ack-On-Error is used
+
+        Returns
+        -------
+        int :
+            Tile size in bits
+        """
+        pass

@@ -38,7 +38,7 @@ class Tile(SCHCObject):
             self.content = SCHCObject.bits_2_bytes(content)
         else:
             raise TypeError("content must be bytes or a string of 0s and 1s")
-        self.size = len(content) * 8
+        self.size = len(self.encoded_content)
         return
 
     def as_bytes(self) -> Tuple[bytes, ...]:

@@ -27,7 +27,7 @@ class LoRaWAN(SCHCProtocol):
         RuntimeError:
             LoRaWAN cannot support fragmentation
         """
-        super().__init__(rule_id)
+        super().__init__("LoRaWAN", rule_id)
         self.id = 1  # Numeral key of LoRaWAN
         self.FPORT_LENGTH = 8  # in bits
         self.RULE_SIZE = 8  # in bits
@@ -122,3 +122,17 @@ class LoRaWAN(SCHCProtocol):
             Result of Reassembly Check Sequence (RCS)
         """
         return super().calculate_rcs(packet)
+
+    def penultimate_tile(self) -> int:
+        """
+        Same as regular tiles
+
+        Returns
+        -------
+        int :
+            Same as tile size on uplink (none on downlink)
+        """
+        if self.RULE_ID == LoRaWAN.UPLINK:
+            return self.TILE_SIZE
+        else:
+            return 0

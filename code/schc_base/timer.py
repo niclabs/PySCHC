@@ -1,21 +1,23 @@
 """ timer: Timer class """
-from time import time
+
+from typing import Callable
+from machine import Timer
 
 
-class Timer:
+class SCHCTimer:
     """
-    Timer Abstract class
+    Timer class for retransmission and inactivity timer
 
     Attributes
     ----------
-    __start_time__ : float
-        Seconds from 1970-01-01 at start timer
+    __alarm__ : Timer.Alarm
+        Alarm that execute on expire
+    __handler__ : Callable
+        Function to call on expiration
     __max_time__ : int
-        Maximum time in seconds
-    __running__ : bool
-        If timer is running
+        Time on expiration
     """
-    def __init__(self, max_time: int) -> None:
+    def __init__(self, handler: Callable, max_time: int) -> None:
         """
         Constructor
 
@@ -24,9 +26,9 @@ class Timer:
         max_time : int
             Maximum time in seconds
         """
-        self.__start_time__ = time()
+        self.__alarm__ = Timer.Alarm(handler, max_time)
+        self.__handler__ = handler
         self.__max_time__ = max_time
-        self.__running__ = True
         return
 
     def reset(self) -> None:
@@ -37,8 +39,8 @@ class Timer:
         -------
         None, alter self
         """
-        self.__start_time__ = time()
-        self.__running__ = True
+        self.__alarm__.cancel()
+        self.__alarm__ = Timer.Alarm(self.__handler__, self.__max_time__)
         return
 
     def stop(self) -> None:
@@ -49,19 +51,5 @@ class Timer:
         -------
         None, alter self
         """
-        self.__running__ = False
+        self.__alarm__.cancel()
         return
-
-    def expired(self) -> bool:
-        """
-        Whether or not timer expires
-
-        Returns
-        -------
-        bool :
-            True if timer has expired
-        """
-        if self.__running__:
-            return time() - self.__start_time__ >= self.__max_time__
-        else:
-            return False

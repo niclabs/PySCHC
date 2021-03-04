@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 from abc import ABC, abstractmethod
-from schc_base import Timer, SCHCObject
+from schc_base import SCHCTimer, SCHCObject
 from schc_messages import SCHCAck, SCHCReceiverAbort, SCHCMessage
 from schc_modes import SCHCFiniteStateMachine
 from schc_parsers import SCHCParser
@@ -16,6 +16,7 @@ class SCHCSender(SCHCFiniteStateMachine, ABC):
     Attributes
     ----------
     protocol
+    state
     retransmission_timer : Timer
         Retransmission Timer to abort retransmitting SCHC Messages
     packet : bytes
@@ -24,6 +25,12 @@ class SCHCSender(SCHCFiniteStateMachine, ABC):
         Compression residue (as bits)
     remaining_packet : str
         Rest of packet to send encoding as 0 and 1 string
+    init_state : SCHCSender.InitialPhase
+        Initial Phase of State Machine
+    sending_state : SCHCSender.SendingPhase
+        Sending Phase of State Machine
+    waiting_state : SCHCSender.WaitingPhase(self)
+        Waiting Phase of State Machine
     """
     class SenderState(SCHCFiniteStateMachine.State, ABC):
         """
@@ -36,6 +43,8 @@ class SCHCSender(SCHCFiniteStateMachine, ABC):
         """
         def __init__(self, state_machine: SCHCSender) -> None:
             super().__init__(state_machine)
+            self.__type__ = "Sender"
+            return
 
         @abstractmethod
         def generate_message(self, mtu: int) -> SCHCMessage:
@@ -49,8 +58,8 @@ class SCHCSender(SCHCFiniteStateMachine, ABC):
 
             Returns
             -------
-            SCHCMessage :
-                Message to send
+            SCHCMessage:
+                SCHC Message to send
 
             Raises
             ------
@@ -70,8 +79,8 @@ class SCHCSender(SCHCFiniteStateMachine, ABC):
 
             Returns
             -------
-            SCHCMessage :
-                SCHC Message to send as response
+            SCHCMessage:
+                SCHC Message to send
 
             Raises
             ------
@@ -84,7 +93,7 @@ class SCHCSender(SCHCFiniteStateMachine, ABC):
             elif isinstance(schc_message, SCHCReceiverAbort):
                 return self.receive_schc_receiver_abort(schc_message)
             else:
-                raise ValueError("Cannot decode SCHC message received")
+                pass
 
         @abstractmethod
         def receive_schc_ack(self, schc_message: SCHCAck) -> SCHCMessage:
@@ -98,8 +107,8 @@ class SCHCSender(SCHCFiniteStateMachine, ABC):
 
             Returns
             -------
-            SCHCMessage :
-                SCHC Message to send as a response
+            SCHCMessage:
+                SCHC Message to send
             """
             pass
 
@@ -115,12 +124,66 @@ class SCHCSender(SCHCFiniteStateMachine, ABC):
 
             Returns
             -------
-            SCHCMessage :
-                SCHC Message to send as response
+            SCHCMessage:
+                SCHC Message to send
             """
             pass
 
-    def __init__(self, protocol: SCHCProtocol, rule_id: int, payload: bytes, residue: str = "", dtag: int = -1) -> None:
+    class InitialPhase(SenderState, ABC):
+        """
+        Initial phase: Initialization of Sender
+        """
+        def __init__(self, state_machine: SCHCSender) -> None:
+            super().__init__(state_machine)
+            self.__name__ = "Initial Phase"
+            return
+
+        def generate_message(self, mtu: int) -> SCHCMessage:
+            pass
+
+        def receive_schc_ack(self, schc_message: SCHCAck) -> SCHCMessage:
+            pass
+
+        def receive_schc_receiver_abort(self, schc_message: SCHCReceiverAbort) -> SCHCMessage:
+            pass
+
+    class SendingPhase(SenderState, ABC):
+        """
+        Sending phase: Sending SCHC Message and receiving SCHC Ack
+        """
+        def __init__(self, state_machine: SCHCSender) -> None:
+            super().__init__(state_machine)
+            self.__name__ = "Sending Phase"
+            return
+
+        def generate_message(self, mtu: int) -> SCHCMessage:
+            pass
+
+        def receive_schc_ack(self, schc_message: SCHCAck) -> SCHCMessage:
+            pass
+
+        def receive_schc_receiver_abort(self, schc_message: SCHCReceiverAbort) -> SCHCMessage:
+            pass
+
+    class WaitingPhase(SenderState, ABC):
+        """
+        Waiting phase: Waiting SCHC Ack and not active sending SCHC Messages
+        """
+        def __init__(self, state_machine: SCHCSender) -> None:
+            super().__init__(state_machine)
+            self.__name__ = "Waiting Phase"
+            return
+
+        def generate_message(self, mtu: int) -> SCHCMessage:
+            pass
+
+        def receive_schc_ack(self, schc_message: SCHCAck) -> SCHCMessage:
+            pass
+
+        def receive_schc_receiver_abort(self, schc_message: SCHCReceiverAbort) -> SCHCMessage:
+            pass
+
+    def __init__(self, protocol: SCHCProtocol, rule_id: int, payload: bytes, residue: str = "", dtag: int = None) -> None:
         """
         Constructor
 
@@ -135,11 +198,16 @@ class SCHCSender(SCHCFiniteStateMachine, ABC):
         dtag
         """
         super().__init__(protocol, rule_id, dtag=dtag)
-        self.retransmission_timer = Timer(protocol.RETRANSMISSION_TIMER)
+        self.retransmission_timer = SCHCTimer(self.on_expiration_time, protocol.RETRANSMISSION_TIMER)
+        self.retransmission_timer.stop()
         self.packet = payload
         self.residue = residue
         self.remaining_packet = residue + SCHCObject.bytes_2_bits(payload)
         self.rcs = self.protocol.calculate_rcs(self.remaining_packet)
+        self.init_state = SCHCSender.InitialPhase(self)
+        self.sending_state = SCHCSender.SendingPhase(self)
+        self.waiting_state = SCHCSender.WaitingPhase(self)
+        self.state = self.init_state
         return
 
     def generate_message(self, mtu: int) -> SCHCMessage:
@@ -153,8 +221,8 @@ class SCHCSender(SCHCFiniteStateMachine, ABC):
 
         Returns
         -------
-        SCHCMessage :
-            Message to send
+        List[SCHCMessage] :
+            List of SCHC Messages to send
 
         Raises
         ------

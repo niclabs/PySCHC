@@ -17,7 +17,7 @@ class Sigfox(SCHCProtocol):
         rule_id : int, optional
             Specified Rule ID in case Profile is different
         """
-        super().__init__(rule_id)
+        super().__init__("Sigfox", rule_id)
         warn("Sigfox is added for testing and completeness, but it is not implemented yet",
              ImportWarning)
         self.id = 2  # Numeral key of Sigfox
@@ -76,3 +76,14 @@ class Sigfox(SCHCProtocol):
             Pending...
         """
         return ""
+
+    def penultimate_tile(self) -> int:
+        """
+        Pending...
+
+        Returns
+        -------
+        int :
+            Pending ...
+        """
+        return 0

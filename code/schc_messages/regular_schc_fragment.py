@@ -52,7 +52,8 @@ class RegularSCHCFragment(SCHCFragment):
         SCHCMessage :
             An new instance of Regular SCHC Fragment
         """
-        protocol_to_use, bits_received, pointer, rule_id, dtag, w = RegularSCHCFragment._get_common_(received, protocol=protocol)
+        protocol_to_use, bits_received, pointer, rule_id, dtag, w = RegularSCHCFragment._get_common_(
+            received, protocol=protocol)
         fcn = int(bits_received[pointer:pointer+protocol_to_use.N], 2)
         pointer += protocol_to_use.N
         message = RegularSCHCFragment(rule_id, protocol=protocol,

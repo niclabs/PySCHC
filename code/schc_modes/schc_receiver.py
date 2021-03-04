@@ -2,8 +2,7 @@
 
 from __future__ import annotations
 from abc import ABC, abstractmethod
-from typing import List
-from schc_base import Timer, Bitmap
+from schc_base import SCHCTimer, Bitmap
 from schc_messages import RegularSCHCFragment, All1SCHCFragment, SCHCAckReq, SCHCSenderAbort, SCHCMessage
 from schc_modes import SCHCFiniteStateMachine
 from schc_parsers import SCHCParser
@@ -17,10 +16,17 @@ class SCHCReceiver(SCHCFiniteStateMachine, ABC):
     Attributes
     ----------
     protocol
+    state
     bitmap : Bitmap
         Bitmap to register tile received
     inactivity_timer : Timer
         Inactivity Timer to abort waiting for SCHC Message
+    receiving_phase : SCHCReceiver.ReceivingPhase
+        Receiving phase of State Machine
+    waiting_phase : SCHCReceiver.WaitingPhase
+        Waiting phase of State Machine
+    waiting_end_phase : SCHCReceiver.WaitingEndPhase
+        Waiting End phase of State Machine
     """
     class ReceiverState(SCHCFiniteStateMachine.State, ABC):
         """
@@ -35,7 +41,7 @@ class SCHCReceiver(SCHCFiniteStateMachine, ABC):
             super().__init__(state_machine)
 
         @abstractmethod
-        def receive_message(self, message: bytes) -> List[SCHCMessage]:
+        def receive_message(self, message: bytes) -> SCHCMessage:
             """
             Receives a message and does something
 
@@ -46,8 +52,8 @@ class SCHCReceiver(SCHCFiniteStateMachine, ABC):
 
             Returns
             -------
-            List[SCHCMessage] :
-                List of SCHC Messages to send
+            SCHCMessage:
+                SCHC Message to send
             """
             schc_message = SCHCParser.from_bytes(self.state_machine.protocol, message)
             if isinstance(schc_message, RegularSCHCFragment):
@@ -59,10 +65,10 @@ class SCHCReceiver(SCHCFiniteStateMachine, ABC):
             elif isinstance(schc_message, SCHCSenderAbort):
                 return self.receive_schc_sender_abort(schc_message)
             else:
-                return list()
+                pass
 
         @abstractmethod
-        def receive_regular_schc_fragment(self, schc_message: RegularSCHCFragment) -> List[SCHCMessage]:
+        def receive_regular_schc_fragment(self, schc_message: RegularSCHCFragment) -> SCHCMessage:
             """
             Does something when SCHC Message
 
@@ -73,13 +79,13 @@ class SCHCReceiver(SCHCFiniteStateMachine, ABC):
 
             Returns
             -------
-            List[SCHCMessage] :
-                List of SCHC Messages to send
+            SCHCMessage:
+                SCHC Message to send
             """
-            return list()
+            pass
 
         @abstractmethod
-        def receive_all1_schc_fragment(self, schc_message: All1SCHCFragment) -> List[SCHCMessage]:
+        def receive_all1_schc_fragment(self, schc_message: All1SCHCFragment) -> SCHCMessage:
             """
             Does something when SCHC Message
 
@@ -90,13 +96,13 @@ class SCHCReceiver(SCHCFiniteStateMachine, ABC):
 
             Returns
             -------
-            List[SCHCMessage] :
-                List of SCHC Messages to send
+            SCHCMessage:
+                SCHC Message to send
             """
-            return list()
+            pass
 
         @abstractmethod
-        def receive_schc_ack_req(self, schc_message: SCHCAckReq) -> List[SCHCMessage]:
+        def receive_schc_ack_req(self, schc_message: SCHCAckReq) -> SCHCMessage:
             """
             Does something when SCHC Message
 
@@ -107,13 +113,13 @@ class SCHCReceiver(SCHCFiniteStateMachine, ABC):
 
             Returns
             -------
-            List[SCHCMessage] :
-                List of SCHC Messages to send
+            SCHCMessage:
+                SCHC Message to send
             """
-            return list()
+            pass
 
         @abstractmethod
-        def receive_schc_sender_abort(self, schc_message: SCHCSenderAbort) -> List[SCHCMessage]:
+        def receive_schc_sender_abort(self, schc_message: SCHCSenderAbort) -> SCHCMessage:
             """
             Does something when SCHC Message
 
@@ -124,13 +130,41 @@ class SCHCReceiver(SCHCFiniteStateMachine, ABC):
 
             Returns
             -------
-            List[SCHCMessage] :
-                List of SCHC Messages to send
+            SCHCMessage:
+                SCHC Message to send
             """
-            return list()
+            pass
 
-    def __init__(self, protocol: SCHCProtocol, rule_id: int, dtag: int = -1) -> None:
+    class ReceivingPhase(ReceiverState, ABC):
+        """
+        Receiving phase: Receiver receiving tiles
+        """
+        def __init__(self, state_machine: SCHCReceiver) -> None:
+            super().__init__(state_machine)
+            return
+
+    class WaitingPhase(ReceiverState, ABC):
+        """
+        Waiting phase: Receiver waiting for transmission of next window
+        """
+        def __init__(self, state_machine: SCHCReceiver) -> None:
+            super().__init__(state_machine)
+            return
+
+    class WaitingEndPhase(ReceiverState, ABC):
+        """
+        Waiting end phase: Waiting for All-1 Fragment Message
+        """
+        def __init__(self, state_machine: SCHCReceiver) -> None:
+            super().__init__(state_machine)
+            return
+
+    def __init__(self, protocol: SCHCProtocol, rule_id: int, dtag: int = None) -> None:
         super().__init__(protocol, rule_id, dtag=dtag)
         self.bitmap = Bitmap(protocol)
-        self.inactivity_timer = Timer(protocol.INACTIVITY_TIMER)
+        self.inactivity_timer = SCHCTimer(self.on_expiration_time, protocol.INACTIVITY_TIMER)
+        self.receiving_phase = SCHCReceiver.ReceivingPhase(self)
+        self.waiting_phase = SCHCReceiver.WaitingPhase(self)
+        self.waiting_end_phase = SCHCReceiver.WaitingEndPhase(self)
+        self.state = self.receiving_phase
         return
