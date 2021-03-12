@@ -1,7 +1,5 @@
-""" lo_ra_wan: LoRaWAN parser function """
-from warnings import warn
+""" lorawan: LoRaWAN parser function """
 
-from schc_base import Tile
 from schc_messages import SCHCMessage, SCHCAck, SCHCAckReq, SCHCReceiverAbort, All1SCHCFragment, RegularSCHCFragment
 from schc_protocols import LoRaWAN
 

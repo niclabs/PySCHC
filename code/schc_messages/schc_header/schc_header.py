@@ -104,3 +104,14 @@ class SCHCHeader(SCHCObject):
             self.c.as_bits(),
             self.compressed_bitmap.as_bits(),
         ])
+
+    def as_bytes(self) -> bytes:
+        """
+        Representation as bytes (probably not to be used)
+
+        Returns
+        -------
+        bytes :
+            Header as bytes
+        """
+        return SCHCObject.bits_2_bytes(self.as_bits())

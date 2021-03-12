@@ -1,7 +1,7 @@
 """ schc_protocols: Package of Protocol implementation """
 
 from schc_protocols.schc_protocol import SCHCProtocol
-from schc_protocols.lo_ra_wan import LoRaWAN
+from schc_protocols.lorawan import LoRaWAN
 from schc_protocols.sigfox import Sigfox
 
 

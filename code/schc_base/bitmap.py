@@ -71,3 +71,6 @@ class Bitmap:
         """
         self.__bitmap__[-fcn - 1] = True
         return
+
+    def __repr__(self) -> str:
+        return "".join(["1" if i else "0" for i in self.__bitmap__])

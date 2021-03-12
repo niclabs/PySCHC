@@ -38,6 +38,18 @@ class SCHCObject(ABC):
         """
         return ''
 
+    @abstractmethod
+    def as_bytes(self) -> bytes:
+        """
+        Represent the SCHCObject content as bytes
+
+        Returns
+        -------
+        bytes :
+            Content in bytes
+        """
+        return b''
+
     @staticmethod
     def bytes_2_bits(content: bytes) -> str:
         """

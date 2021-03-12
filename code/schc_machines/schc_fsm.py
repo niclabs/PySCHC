@@ -1,11 +1,13 @@
 """ schc_fsm: SCHC Finite State Machine Abstract Class """
 
 from __future__ import annotations
-from abc import ABC
 import logging
+import sys
+from abc import ABC
 from typing import Callable
-from warnings import warn
-from schc_base import AttemptsCounter
+
+from machine import Timer
+from schc_base import AttemptsCounter, Bitmap
 from schc_messages import SCHCMessage
 from schc_protocols import SCHCProtocol
 
@@ -26,6 +28,12 @@ class SCHCFiniteStateMachine(ABC):
         -1 Implies Dtag is not used and there is just one Packet for Rule ID
     __current_window__ : int
         Current window being processed
+    __last_window__ : bool
+        Whether current window is the last window
+    __fcn__ : int
+        Current fcn in progress of window
+    bitmap : Bitmap
+        Bitmap of current window
     attempts : AttemptsCounter
         Attempts Counter that register request for SCHC ACKs
     state : State
@@ -33,6 +41,9 @@ class SCHCFiniteStateMachine(ABC):
     rcs : str
         Calculated rcs
     """
+    __mode__ = "None"
+    __type__ = "None"
+
     class State:
         """
         Define the current state of a SCHC Finite State Machine
@@ -42,6 +53,8 @@ class SCHCFiniteStateMachine(ABC):
         state_machine : SCHCFiniteStateMachine
             State Machine associated
         """
+        __name__ = "State"
+
         class Logger:
             """
             SCHC Logger to log SCHC Fragmentation
@@ -53,10 +66,10 @@ class SCHCFiniteStateMachine(ABC):
             def __log__(self, mode: Callable) -> None:
                 mode("SCHC Fragment on '{}' mode, {} on '{}' state".format(
                     self.__state__.state_machine.__mode__,
-                    self.__state__.__type__,
+                    self.__state__.state_machine.__type__,
                     self.__state__.__name__
                 ))
-                second_line = "Protocol: {}, Rule ID: {}".format(
+                second_line = "\tProtocol: {}, Rule ID: {}".format(
                     self.__state__.state_machine.protocol.__name__,
                     self.__state__.state_machine.__rule_id__
                 )
@@ -92,7 +105,7 @@ class SCHCFiniteStateMachine(ABC):
                 None
                 """
                 self.enter_state()
-                logging.debug("Message:\n{}".format(message.as_text()))
+                logging.debug("\tMessage:\n{}".format(message.as_text()))
                 return
 
             def error(self, message: str) -> None:
@@ -109,7 +122,7 @@ class SCHCFiniteStateMachine(ABC):
                 None
                 """
                 self.__log__(logging.error)
-                logging.error(message)
+                logging.error("\t{}".format(message))
                 return
 
             def warning(self, message: str) -> None:
@@ -126,7 +139,7 @@ class SCHCFiniteStateMachine(ABC):
                 None
                 """
                 self.__log__(logging.warning)
-                logging.warning(message)
+                logging.warning("\t{}".format(message))
                 return
 
             def debug(self, message: str) -> None:
@@ -143,7 +156,7 @@ class SCHCFiniteStateMachine(ABC):
                 None
                 """
                 self.__log__(logging.debug)
-                logging.debug(message)
+                logging.debug("\t{}".format(message))
                 return
 
             def info(self, message: str) -> None:
@@ -160,13 +173,11 @@ class SCHCFiniteStateMachine(ABC):
                 None
                 """
                 self.__log__(logging.info)
-                logging.info(message)
+                logging.info("\t{}".format(message))
                 return
 
         def __init__(self, state_machine: SCHCFiniteStateMachine) -> None:
             self.state_machine = state_machine
-            self.__name__ = "State"
-            self.__type__ = "None"
             self._logger_ = SCHCFiniteStateMachine.State.Logger(self)
             return
 
@@ -181,7 +192,28 @@ class SCHCFiniteStateMachine(ABC):
             self._logger_.enter_state()
             return
 
-        def receive_message(self, message: bytes) -> SCHCMessage:
+        def generate_message(self, mtu: int) -> SCHCMessage:
+            """
+            Generates a SCHC message to send
+
+            Parameters
+            ----------
+            mtu : int
+                Size of MTU available (in bytes)
+
+            Returns
+            -------
+            SCHCMessage:
+                SCHC Message to send
+
+            Raises
+            ------
+            RuntimeError
+                No more SCHC Message to send on current state
+            """
+            raise RuntimeError("No more message to send")
+
+        def receive_message(self, message: bytes) -> None:
             """
             Does something when receiving bytes
 
@@ -192,10 +224,15 @@ class SCHCFiniteStateMachine(ABC):
 
             Returns
             -------
-            SCHCMessage:
-                SCHC Message to send
+            None:
+                Alter state
+
+            Raises
+            ------
+            RuntimeError
+                Unreachable behaviour
             """
-            pass
+            return
 
         def on_expiration_time(self) -> None:
             """
@@ -205,9 +242,103 @@ class SCHCFiniteStateMachine(ABC):
             -------
             None
             """
-            pass
+            return
 
-    def __init__(self, protocol: SCHCProtocol, rule_id: int, dtag: int = None) -> None:
+    class ErrorState(State):
+        """
+        Error State, when reached next call is going to raise a RuntimeError
+        """
+        __name__ = "Error State"
+
+        def receive_message(self, message: bytes) -> None:
+            """
+            Always raise RuntimeError
+
+            Parameters
+            ----------
+            message : bytes
+                Any message
+
+            Returns
+            -------
+            None
+
+            Raises
+            ------
+            SystemExit :
+                Raises a SystemExit with error code -1
+            """
+            sys.exit(-1)
+
+        def generate_message(self, mtu: int) -> SCHCMessage:
+            """
+            Generates a SCHC message to send
+
+            Parameters
+            ----------
+            mtu : int
+                Size of MTU available (in bytes)
+
+            Returns
+            -------
+            SCHCMessage:
+                SCHC Message to send
+
+            Raises
+            ------
+            SystemExit :
+                Raises a SystemExit with error code -1
+            """
+            sys.exit(-1)
+
+    class EndState(State):
+        """
+        End State, when reached next call is going to stop and exit
+        """
+        __name__ = "End State"
+
+        def receive_message(self, message: bytes) -> None:
+            """
+            Always raise RuntimeError
+
+            Parameters
+            ----------
+            message : bytes
+                Any message
+
+            Returns
+            -------
+            None
+
+            Raises
+            ------
+            SystemExit :
+                Raises a SystemExit with error code -1
+            """
+            sys.exit(0)
+
+        def generate_message(self, mtu: int) -> SCHCMessage:
+            """
+            Generates a SCHC message to send
+
+            Parameters
+            ----------
+            mtu : int
+                Size of MTU available (in bytes)
+
+            Returns
+            -------
+            SCHCMessage:
+                SCHC Message to send
+
+            Raises
+            ------
+            SystemExit :
+                Raises a SystemExit with error code -1
+            """
+            sys.exit(0)
+
+    def __init__(self, protocol: SCHCProtocol, dtag: int = None) -> None:
         """
         Constructor
 
@@ -215,29 +346,30 @@ class SCHCFiniteStateMachine(ABC):
         ----------
         protocol : SCHCProtocol
             Protocol to use
-        rule_id : int
-            Rule ID to identify behaviour
         dtag : int, optional
             Dtag to identify behaviour, Default: -1 implying there is just
             one SCHC Packet for Rule ID at a time
         """
         self.protocol = protocol
-        self.__rule_id__ = rule_id
-        if protocol.RULE_ID != rule_id:
-            warn("Protocol given has a different Rule ID, changing to match, Rule ID of finite state machine")
-            protocol.set_rule_id(rule_id)
+        self.__rule_id__ = protocol.RULE_ID
         if protocol.T == 0:
             self.__dtag__ = None
         else:
             self.__dtag__ = dtag
         self.__current_window__ = 0
+        self.__last_window__ = False
+        self.__fcn__ = self.protocol.WINDOW_SIZE - 1
+        self.bitmap = Bitmap(protocol)
         self.attempts = AttemptsCounter(protocol.MAX_ACK_REQUEST)
+        self.states = {
+            "error": SCHCFiniteStateMachine.ErrorState(self),
+            "end": SCHCFiniteStateMachine.EndState(self)
+        }
         self.state = SCHCFiniteStateMachine.State(self)
         self.rcs = ""
-        self.__mode__ = "None"
         return
 
-    def receive_message(self, message: bytes) -> SCHCMessage:
+    def receive_message(self, message: bytes) -> None:
         """
         Does something when receiving bytes
 
@@ -253,7 +385,28 @@ class SCHCFiniteStateMachine(ABC):
         """
         return self.state.receive_message(message)
 
-    def on_expiration_time(self) -> None:
+    def generate_message(self, mtu: int) -> SCHCMessage:
+        """
+        Generates a SCHC message to send
+
+        Parameters
+        ----------
+        mtu : int
+            Size of MTU available (in bytes)
+
+        Returns
+        -------
+        SCHCMessage :
+            SCHC Messages to send
+
+        Raises
+        ------
+        RuntimeError
+            No more SCHC Message to send on current state
+        """
+        return self.state.generate_message(mtu)
+
+    def on_expiration_time(self, alarm: Timer) -> None:
         """
         Behaviour on time expiration
 
@@ -262,3 +415,4 @@ class SCHCFiniteStateMachine(ABC):
         None
         """
         self.state.on_expiration_time()
+        return

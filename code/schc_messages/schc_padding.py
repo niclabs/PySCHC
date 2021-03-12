@@ -39,3 +39,14 @@ class SCHCPadding(SCHCObject):
             A str with just '0'
         """
         return '0' * self.size
+
+    def as_bytes(self) -> bytes:
+        """
+        Not to be used
+
+        Returns
+        -------
+        bytes:
+            b''
+        """
+        return b''

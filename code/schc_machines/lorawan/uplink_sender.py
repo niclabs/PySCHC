@@ -1,30 +1,28 @@
-""" schc_sender: SCHC Ack-on-Error Mode Sender Finite State Machine """
+""" uplink_sender: Uplink sender state machine """
 
 from __future__ import annotations
 from schc_base import Tile
-from schc_messages import SCHCMessage, SCHCAck, SCHCReceiverAbort, RegularSCHCFragment, All1SCHCFragment
+from schc_machines import SCHCSender, AckOnError
+from schc_messages import SCHCMessage, RegularSCHCFragment, All1SCHCFragment
 from schc_messages.schc_header import WField
-from schc_modes import SCHCSender
 from schc_protocols import SCHCProtocol
 
 
-class AckOnErrorSCHCSender(SCHCSender):
+class UplinkSender(AckOnError, SCHCSender):
     """
-    SCHC Finite State Machine for Ack On Error Sender behaviour
-
+    Uplink Sender State Machine with Ack-on-Error Mode
     Attributes
     ----------
     protocol
     state
     residue
-    init_state
-    sending_state
-    waiting_state
     """
-    class InitialPhase(SCHCSender.InitialPhase):
+    class InitialPhase(SCHCSender.SenderState):
         """
         Initial Phase of Ack on Error
         """
+        __name__ = "Initial Phase"
+
         def __generate_tiles__(self) -> None:
             sm = self.state_machine
             last_tile_length = len(sm.remaining_packet) % sm.protocol.TILE_SIZE
@@ -44,24 +42,31 @@ class AckOnErrorSCHCSender(SCHCSender):
             sm.tiles.append(last_tile)
             sm.tiles = [Tile(i) for i in sm.tiles]
             self._logger_.debug("{} tiles generated".format(len(sm.tiles)))
-            self.state_machine.state = self.state_machine.sending_state
+            self.state_machine.state = self.state_machine.states["sending_phase"]
             self.state_machine.state.enter_state()
             return
 
-        def generate_message(self, mtu: int) -> SCHCMessage:
-            pass
-
-        def receive_schc_ack(self, schc_message: SCHCAck) -> SCHCMessage:
-            pass
-
-        def receive_schc_receiver_abort(self, schc_message: SCHCReceiverAbort) -> SCHCMessage:
-            pass
-
-    class SendingPhase(SCHCSender.SendingPhase):
+    class SendingPhase(SCHCSender.SenderState):
         """
         Sending Phase of Ack on Error
         """
+        __name__ = "Sending Phase"
+
         def generate_message(self, mtu: int) -> SCHCMessage:
+            """
+            Generate regular fragment until all tiles are sent
+
+            Parameters
+            ----------
+            mtu : int
+                MTU in bytes
+
+            Returns
+            -------
+            SCHCMessage :
+                RegularSCHCFragment until all tiles are sent, then
+                All1SCHCFragment
+            """
             regular_message = RegularSCHCFragment(self.state_machine.__rule_id__,
                                                   self.state_machine.__fcn__,
                                                   self.state_machine.protocol.id,
@@ -77,10 +82,18 @@ class AckOnErrorSCHCSender(SCHCSender):
                     )
                     mtu_available -= candid.size
                     candid = self.state_machine.tiles[0]
+                    self._logger_.debug("Add tile with fcn {} for windows {}".format(
+                        self.state_machine.__fcn__, self.state_machine.__current_window__))
                     self.state_machine.__fcn__ -= 1
                     if self.state_machine.__fcn__ < 0:
                         self.state_machine.__current_window__ += 1
                         self.state_machine.__fcn__ = self.state_machine.protocol.WINDOW_SIZE - 1
+                        # self.state_machine.state = self.state_machine.states["waiting_phase"]
+                        # self.state_machine.state.enter_state()
+                        # self.state_machine.retransmission_timer.reset()
+                        self.state_machine.state = self.state_machine.states["end"]
+                        self.state_machine.state.enter_state()
+                        break
             elif len(self.state_machine.tiles) == 1:
                 last_tile = self.state_machine.tiles.pop(0)
                 regular_message.add_tile(last_tile)
@@ -94,7 +107,8 @@ class AckOnErrorSCHCSender(SCHCSender):
                     self.state_machine.__current_window__,
                     self.state_machine.rcs
                 )
-                self.state_machine.state = self.state_machine.waiting_state
+                self.state_machine.state = self.state_machine.states["waiting_phase"]
+                self.state_machine.state.enter_state()
                 self.state_machine.retransmission_timer.reset()
                 return all1
             regular_message.header.w = WField(self.state_machine.__current_window__,
@@ -103,36 +117,20 @@ class AckOnErrorSCHCSender(SCHCSender):
             self._logger_.schc_message(regular_message)
             return regular_message
 
-        def receive_schc_ack(self, schc_message: SCHCAck) -> SCHCMessage:
-            pass
-
-        def receive_schc_receiver_abort(self, schc_message: SCHCReceiverAbort) -> SCHCMessage:
-            pass
-
-    class WaitingPhase(SCHCSender.WaitingPhase):
+    class WaitingPhase(SCHCSender.SenderState):
         """
         Waiting Phase of Ack on Error
         """
-        def generate_message(self, mtu: int) -> SCHCMessage:
-            pass
+        __name__ = "Waiting Phase"
 
-        def receive_schc_ack(self, schc_message: SCHCAck) -> SCHCMessage:
-            pass
-
-        def receive_schc_receiver_abort(self, schc_message: SCHCReceiverAbort) -> SCHCMessage:
-            pass
-
-    def __init__(self, protocol: SCHCProtocol, rule_id: int, payload: bytes,
+    def __init__(self, protocol: SCHCProtocol, payload: bytes,
                  residue: str = "", dtag: int = None) -> None:
-        super().__init__(protocol, rule_id, payload, residue=residue, dtag=dtag)
-        self.__mode__ = "Ack On Error"
-        self.init_state = AckOnErrorSCHCSender.InitialPhase(self)
-        self.sending_state = AckOnErrorSCHCSender.SendingPhase(self)
-        self.waiting_state = AckOnErrorSCHCSender.WaitingPhase(self)
-        self.state = self.init_state
+        super().__init__(protocol, payload, residue=residue, dtag=dtag)
+        self.states["initial_phase"] = UplinkSender.InitialPhase(self)
+        self.states["sending_phase"] = UplinkSender.SendingPhase(self)
+        self.states["waiting_phase"] = UplinkSender.WaitingPhase(self)
+        self.state = self.states["initial_phase"]
         self.state.enter_state()
-        self.__fcn__ = self.protocol.WINDOW_SIZE - 1
-        self.__last_window__ = False
         self.tiles = list()
         self.sent_tiles = list()
         self.state.__generate_tiles__()

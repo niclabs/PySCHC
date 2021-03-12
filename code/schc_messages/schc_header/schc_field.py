@@ -13,6 +13,17 @@ class SCHCField(SCHCObject, ABC):
     def __init__(self):
         super().__init__()
 
+    def as_bytes(self) -> bytes:
+        """
+        Not to be used
+
+        Returns
+        -------
+        bytes:
+            b''
+        """
+        return b''
+
     @abstractmethod
     def as_bits(self) -> str:
         """

@@ -32,7 +32,7 @@ class SCHCParser:
             Protocol not available to parser
         """
         if protocol.id == SCHCProtocol.LoRaWAN:
-            from schc_parsers.lo_ra_wan import parse
+            from schc_parsers.lorawan import parse
         elif protocol.id == SCHCProtocol.Sigfox:
             from schc_parsers.sigfox import parse
         else:

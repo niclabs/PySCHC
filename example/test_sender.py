@@ -2,6 +2,7 @@
 
 import socket
 import logging
+from random import gauss
 
 HOST = "127.0.0.1"
 PORT = 50007
@@ -56,32 +57,29 @@ RESIDUE = "0101100"
 
 
 if __name__ == '__main__':
-    import os
-    import sys
-
     logging.basicConfig(level=logging.DEBUG)
 
-    sys.path.append(os.path.join(
-        os.pardir,
-        "code"
-    ))
-    from schc_modes.ack_on_error import AckOnErrorSCHCSender
+    from schc_machines.lorawan import UplinkSender
     from schc_protocols import LoRaWAN
 
-    sender = AckOnErrorSCHCSender(
+    sender = UplinkSender(
         LoRaWAN(LoRaWAN.UPLINK),
-        LoRaWAN.UPLINK,
         MESSAGE,
         RESIDUE
     )
 
-    go_on = 0
-
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         s.connect((HOST, PORT))
-        while go_on < 2:
-            message = sender.generate_message(20)
-            s.send(b"".join(message.as_bytes()))
-            go_on += 1
-            data = s.recv(1024)
-            print("Received: {}".format(data))
+        while True:
+            while True:
+                try:
+                    mtu = int(gauss(20, 2))
+                    message = sender.generate_message(mtu)
+                    print("Current mtu: {}".format(mtu))
+                    s.send(b"".join(message.as_bytes()))
+                except RuntimeError as e:
+                    print(e)
+                    break
+            data = s.recv(2048)
+            if data:
+                sender.receive_message(data)

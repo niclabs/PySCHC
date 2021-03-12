@@ -117,7 +117,6 @@ class SCHCMessage(SCHCObject, ABC):
         """
         last_word_size = self.size % self.protocol.L2_WORD
         if last_word_size == 0:
-            logging.debug("No padding added")
             return self.size
         pad_size = self.padding.add(self.protocol.L2_WORD - last_word_size)
         self.size = self.header.size + self.payload.size + pad_size

@@ -66,3 +66,6 @@ class WField(SCHCField):
             return text_size, tag, content
         else:
             return super().format_text()
+
+    def __eq__(self, other: int) -> bool:
+        return other == self.w

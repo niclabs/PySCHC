@@ -30,6 +30,17 @@ class SCHCPayload(SCHCObject):
         """
         return self.content
 
+    def as_bytes(self) -> bytes:
+        """
+        Represent payload as bytes
+
+        Returns
+        -------
+        bytes:
+            Payload as bytes
+        """
+        return SCHCObject.bits_2_bytes(self.content)
+
     def add_content(self, to_add: Union[str, bytes]) -> int:
         """
         Add content to payload
