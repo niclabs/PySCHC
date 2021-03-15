@@ -1,9 +1,7 @@
 """ uplink_receiver: Uplink receiver state machine """
 
 from __future__ import annotations
-
 from typing import List
-
 from schc_machines import SCHCReceiver, AckOnError
 from schc_messages import RegularSCHCFragment, SCHCMessage, SCHCAck
 from schc_protocols import SCHCProtocol
@@ -89,11 +87,11 @@ class UplinkReceiver(AckOnError, SCHCReceiver):
                 # TODO
                 pass
             elif self.state_machine.__current_window__ == schc_message.header.w:
-                self._logger_.debug("Window received: {}".format(schc_message.header.w.w))
                 fcn = schc_message.header.fcn.fcn
+                self.state_machine.__fcn__ = fcn
                 tiles_received = schc_message.payload.size // self.state_machine.protocol.TILE_SIZE
                 tiles = schc_message.payload.as_bytes()
-                self._logger_.debug("Tiles from: {} to {}".format(fcn, fcn - tiles_received + 1))
+                self._logger_.debug("Window received: {}\tTiles from: {} to {}".format(schc_message.header.w.w, fcn, fcn - tiles_received + 1))
                 for tile in range(tiles_received):
                     self.state_machine.payload.add_content(tiles[0:self.state_machine.protocol.TILE_SIZE // 8])
                     tiles = tiles[self.state_machine.protocol.TILE_SIZE // 8:]
@@ -108,10 +106,13 @@ class UplinkReceiver(AckOnError, SCHCReceiver):
                                     w=self.state_machine.__current_window__,
                                     compressed_bitmap=self.state_machine.bitmap.generate_compress())
                         )
-                        self.state_machine.__current_window__ -= 1
+                        self.state_machine.__current_window__ += 1
                         self.state_machine.__fcn__ = self.state_machine.protocol.WINDOW_SIZE - 1
-                        self._logger_.debug("Current bitmap: {}".format(self.state_machine.bitmap))
-                    self._logger_.debug("Current bitmap: {}".format(self.state_machine.bitmap))
+                self._logger_.debug("Current bitmap: {}. Waiting for w={} fcn={} tile".format(
+                    self.state_machine.bitmap, self.state_machine.__current_window__, self.state_machine.__fcn__)
+                )
+            else:
+                self._logger_.debug("Different window received")
             return
 
     class WaitingPhase(SCHCReceiver.ReceiverState, AckOnError):

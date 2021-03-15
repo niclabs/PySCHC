@@ -1,6 +1,6 @@
 """ bitmap: Bitmap class """
 
-from typing import List
+from typing import List, Iterable
 from schc_protocols import SCHCProtocol
 
 
@@ -74,3 +74,7 @@ class Bitmap:
 
     def __repr__(self) -> str:
         return "".join(["1" if i else "0" for i in self.__bitmap__])
+
+    def __iter__(self) -> Iterable:
+        for bit in self.__bitmap__:
+            yield bit

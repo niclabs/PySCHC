@@ -1,7 +1,7 @@
 """ uplink_sender: Uplink sender state machine """
 
 from __future__ import annotations
-from schc_base import Tile
+from schc_base import Tile, Bitmap
 from schc_machines import SCHCSender, AckOnError
 from schc_messages import SCHCMessage, RegularSCHCFragment, All1SCHCFragment
 from schc_messages.schc_header import WField
@@ -86,12 +86,8 @@ class UplinkSender(AckOnError, SCHCSender):
                         self.state_machine.__fcn__, self.state_machine.__current_window__))
                     self.state_machine.__fcn__ -= 1
                     if self.state_machine.__fcn__ < 0:
-                        self.state_machine.__current_window__ += 1
-                        self.state_machine.__fcn__ = self.state_machine.protocol.WINDOW_SIZE - 1
-                        # self.state_machine.state = self.state_machine.states["waiting_phase"]
-                        # self.state_machine.state.enter_state()
-                        # self.state_machine.retransmission_timer.reset()
-                        self.state_machine.state = self.state_machine.states["end"]
+                        self.state_machine.state = self.state_machine.states["waiting_phase"]
+                        self.state_machine.retransmission_timer.reset()
                         self.state_machine.state.enter_state()
                         break
             elif len(self.state_machine.tiles) == 1:
@@ -111,8 +107,6 @@ class UplinkSender(AckOnError, SCHCSender):
                 self.state_machine.state.enter_state()
                 self.state_machine.retransmission_timer.reset()
                 return all1
-            regular_message.header.w = WField(self.state_machine.__current_window__,
-                                              self.state_machine.protocol.M)
             regular_message.add_padding()
             self._logger_.schc_message(regular_message)
             return regular_message
@@ -122,6 +116,63 @@ class UplinkSender(AckOnError, SCHCSender):
         Waiting Phase of Ack on Error
         """
         __name__ = "Waiting Phase"
+
+        def generate_message(self, mtu: int) -> SCHCMessage:
+            """
+            Wait for ACK
+
+            Parameters
+            ----------
+            mtu : int
+                MTU in bytes
+
+            Returns
+            -------
+            SCHCMessage :
+                None
+
+            Raises
+            ------
+            RuntimeError :
+                Awaits for Ack
+            """
+            raise RuntimeError("Awaits for Ack after a windows was sent")
+
+        def receive_schc_ack(self, schc_message: SCHCAck) -> None:
+            """
+            Receive an Ack after a windows is fully sent
+
+            Parameters
+            ----------
+            schc_message : SCHCAck
+                SCHCAck reporting end of transmission or window
+
+            Returns
+            -------
+            None, alter state
+            """
+            if self.state_machine.__current_window__ != schc_message.header.w:
+                # TODO
+                return
+            else:
+                self.state_machine.bitmap = Bitmap(self.state_machine.protocol)
+                for fcn in schc_message.header.compressed_bitmap.bitmap:
+                    self.state_machine.bitmap.tile_received(
+                        self.state_machine.protocol.WINDOW_SIZE - 1 - fcn
+                    )
+                self._logger_.debug("Bitmap received: {}".format(self.state_machine.bitmap))
+                while len(self.state_machine.bitmap) < self.state_machine.protocol.WINDOW_SIZE:
+                    self.state_machine.bitmap.append(True)
+                if sum(self.state_machine.bitmap) == len(self.state_machine.bitmap):
+                    self.state_machine.state = self.state_machine.states["sending_phase"]
+                    self.state_machine.retransmission_timer.stop()
+                    self.state_machine.__current_window__ += 1
+                    self.state_machine.__fcn__ = self.state_machine.protocol.WINDOW_SIZE - 1
+                    self.state_machine.state.enter_state()
+                    return
+                else:
+                    # TODO
+                    return
 
     def __init__(self, protocol: SCHCProtocol, payload: bytes,
                  residue: str = "", dtag: int = None) -> None:

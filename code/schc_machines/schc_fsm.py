@@ -5,7 +5,6 @@ import logging
 import sys
 from abc import ABC
 from typing import Callable
-
 from machine import Timer
 from schc_base import AttemptsCounter, Bitmap
 from schc_messages import SCHCMessage
