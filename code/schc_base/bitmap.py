@@ -1,5 +1,6 @@
 """ bitmap: Bitmap class """
 
+from __future__ import annotations
 from typing import List, Iterable
 from schc_protocols import SCHCProtocol
 
@@ -72,8 +73,34 @@ class Bitmap:
         self.__bitmap__[-fcn - 1] = True
         return
 
+    @staticmethod
+    def from_compress_bitmap(bitmap: List[bool], protocol: SCHCProtocol) -> Bitmap:
+        """
+        Calculated bitmap from bitmap of compress_bitmap on header
+        of a message
+
+        Parameters
+        ----------
+        bitmap : List[bool]
+            bitmap attribute of compressed_bitmap of header of a SCHCMessage
+        protocol : SCHCProtocol
+            protocol to use
+
+        Returns
+        -------
+        Bitmap :
+            A Bitmap object
+        """
+        calculated_bitmap = Bitmap(protocol)
+        calculated_bitmap.__bitmap__ = bitmap
+        calculated_bitmap.__bitmap__ += [True] * (protocol.WINDOW_SIZE - len(bitmap))
+        return calculated_bitmap
+
     def __repr__(self) -> str:
         return "".join(["1" if i else "0" for i in self.__bitmap__])
+
+    def __len__(self) -> int:
+        return len(self.__bitmap__)
 
     def __iter__(self) -> Iterable:
         for bit in self.__bitmap__:

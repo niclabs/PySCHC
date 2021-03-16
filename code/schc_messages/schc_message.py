@@ -81,7 +81,7 @@ class SCHCMessage(SCHCObject, ABC):
         """
         pass
 
-    def as_bytes(self) -> Tuple[bytes, ...]:
+    def as_bytes(self) -> bytes:
         """
         Returns a tuple of bytes of the SCHCMessage
 
@@ -97,14 +97,7 @@ class SCHCMessage(SCHCObject, ABC):
             Any other SCHC protocol, but LoRaWAN
         """
         message = self.as_bits()
-        if self.protocol.id == 0:
-            return self.bits_2_bytes(message),
-        if self.protocol.id == SCHCProtocol.LoRaWAN:
-            fport = message[0:self.protocol.FPORT_LENGTH]
-            lorawan_payload = message[self.protocol.FPORT_LENGTH:]
-            return self.bits_2_bytes(fport), self.bits_2_bytes(lorawan_payload)
-        else:
-            raise NotImplemented("Just LoRaWAN protocol is currently implemented")
+        return self.bits_2_bytes(message)
 
     def add_padding(self) -> int:
         """

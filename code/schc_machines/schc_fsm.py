@@ -4,7 +4,7 @@ from __future__ import annotations
 import logging
 import sys
 from abc import ABC
-from typing import Callable
+from typing import Callable, Dict, List
 from machine import Timer
 from schc_base import AttemptsCounter, Bitmap
 from schc_messages import SCHCMessage
@@ -39,6 +39,12 @@ class SCHCFiniteStateMachine(ABC):
         Current State of State Machine
     rcs : str
         Calculated rcs
+    __exit_msg__ : str
+        Message to raise when error state
+    __end_msg__ : str
+        Message to raise when end state
+    message_to_send : List[SCHCMessage]
+        Queued message to be send prior next state
     """
     __mode__ = "None"
     __type__ = "None"
@@ -207,10 +213,10 @@ class SCHCFiniteStateMachine(ABC):
 
             Raises
             ------
-            RuntimeError
+            GeneratorExit
                 No more SCHC Message to send on current state
             """
-            raise RuntimeError("No more message to send")
+            raise GeneratorExit("No more message to send")
 
         def receive_message(self, message: bytes) -> None:
             """
@@ -267,7 +273,7 @@ class SCHCFiniteStateMachine(ABC):
             SystemExit :
                 Raises a SystemExit with error code -1
             """
-            sys.exit(-1)
+            raise SystemExit(self.state_machine.__exit_msg__)
 
         def generate_message(self, mtu: int) -> SCHCMessage:
             """
@@ -288,7 +294,7 @@ class SCHCFiniteStateMachine(ABC):
             SystemExit :
                 Raises a SystemExit with error code -1
             """
-            sys.exit(-1)
+            raise SystemExit(self.state_machine.__exit_msg__)
 
     class EndState(State):
         """
@@ -314,7 +320,7 @@ class SCHCFiniteStateMachine(ABC):
             SystemExit :
                 Raises a SystemExit with error code -1
             """
-            sys.exit(0)
+            raise SystemExit(self.state_machine.__end_msg__)
 
         def generate_message(self, mtu: int) -> SCHCMessage:
             """
@@ -335,7 +341,7 @@ class SCHCFiniteStateMachine(ABC):
             SystemExit :
                 Raises a SystemExit with error code -1
             """
-            sys.exit(0)
+            raise SystemExit(self.state_machine.__end_msg__)
 
     def __init__(self, protocol: SCHCProtocol, dtag: int = None) -> None:
         """
@@ -360,12 +366,14 @@ class SCHCFiniteStateMachine(ABC):
         self.__fcn__ = self.protocol.WINDOW_SIZE - 1
         self.bitmap = Bitmap(protocol)
         self.attempts = AttemptsCounter(protocol.MAX_ACK_REQUEST)
-        self.states = {
-            "error": SCHCFiniteStateMachine.ErrorState(self),
-            "end": SCHCFiniteStateMachine.EndState(self)
-        }
+        self.states: Dict[str, SCHCFiniteStateMachine.State] = dict()
+        self.states["error"] = SCHCFiniteStateMachine.ErrorState(self)
+        self.states["end"] = SCHCFiniteStateMachine.EndState(self)
         self.state = SCHCFiniteStateMachine.State(self)
         self.rcs = ""
+        self.__exit_msg__ = ""
+        self.__end_msg__ = ""
+        self.message_to_send: List[SCHCMessage] = list()
         return
 
     def receive_message(self, message: bytes) -> None:
@@ -382,7 +390,8 @@ class SCHCFiniteStateMachine(ABC):
         SCHCMessage:
                 SCHC Message to send
         """
-        return self.state.receive_message(message)
+        self.state.receive_message(message)
+        return
 
     def generate_message(self, mtu: int) -> SCHCMessage:
         """

@@ -79,7 +79,7 @@ class SCHCSender(SCHCFiniteStateMachine, ABC):
             elif isinstance(schc_message, SCHCReceiverAbort):
                 return self.receive_schc_receiver_abort(schc_message)
             else:
-                raise RuntimeError("Bytes received could not be decoded")
+                raise ValueError("Bytes received could not be decoded")
 
         def receive_schc_ack(self, schc_message: SCHCAck) -> None:
             """
@@ -141,4 +141,5 @@ class SCHCSender(SCHCFiniteStateMachine, ABC):
         self.residue = residue
         self.remaining_packet = residue + SCHCObject.bytes_2_bits(payload)
         self.rcs = self.protocol.calculate_rcs(self.remaining_packet)
+        self.__end_msg__ = "Message sent and acknowledged"
         return

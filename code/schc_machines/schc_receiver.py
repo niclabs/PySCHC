@@ -39,6 +39,11 @@ class SCHCReceiver(SCHCFiniteStateMachine, ABC):
             Returns
             -------
             None, alter state
+
+            Raises
+            ------
+            ValueError
+                In case bytes received could not be decoded to a SCHC Message
             """
             schc_message = SCHCParser.from_bytes(self.state_machine.protocol, message)
             if isinstance(schc_message, RegularSCHCFragment):
@@ -50,7 +55,7 @@ class SCHCReceiver(SCHCFiniteStateMachine, ABC):
             elif isinstance(schc_message, SCHCSenderAbort):
                 return self.receive_schc_sender_abort(schc_message)
             else:
-                raise RuntimeError("Bytes received could not be decoded")
+                raise ValueError("Bytes received could not be decoded")
 
         def receive_regular_schc_fragment(self, schc_message: RegularSCHCFragment) -> None:
             """
@@ -137,4 +142,5 @@ class SCHCReceiver(SCHCFiniteStateMachine, ABC):
         super().__init__(protocol, dtag=dtag)
         self.payload: SCHCPayload = SCHCPayload()
         self.inactivity_timer = SCHCTimer(self.on_expiration_time, protocol.INACTIVITY_TIMER)
+        self.__end_msg__ = "Message received and resembled"
         return

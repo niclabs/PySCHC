@@ -1,29 +1,15 @@
 """ test_receiver: Test script Receiver side"""
 
-import socket
 import logging
-from random import gauss
+import socket
+from common_methods import messaging_loop, HOST
 
-HOST            = "127.0.0.1"
-RECEIVER_PORT   = 50006
-SENDER_PORT     = 50007
+RECEIVER_PORT = 50006
+SENDER_PORT = 50007
 
-sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-sock.bind((HOST, RECEIVER_PORT))
-sock.listen(1)
-
-def send_socket(msg: bytes) ->  None:
-    sockTx = socket.socket()
-    sockTx.connect((HOST, SENDER_PORT))
-    sockTx.send(msg)
-    sockTx.close()
-    return
-
-
-def receive_socket() -> bytes:
-    conn, addr = sock.accept()
-    data = conn.recv(1024)
-    return data
+socket_rx = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+socket_rx.bind((HOST, RECEIVER_PORT))
+socket_rx.listen(1)
 
 
 if __name__ == '__main__':
@@ -36,15 +22,15 @@ if __name__ == '__main__':
         LoRaWAN(LoRaWAN.UPLINK)
     )
 
-    while True:
-        while True:
-            try:
-                mtu = int(gauss(20, 2))
-                message = receiver.generate_message(mtu)
-                logging.info("Current mtu: {}".format(mtu))
-                send_socket(b"".join(message.as_bytes()))
-            except RuntimeError as e:
-                break
-        data = receive_socket()
-        if data:
-            receiver.receive_message(data)
+    messaging_loop(receiver, socket_rx, SENDER_PORT)
+
+    packet = receiver.payload.as_bits()
+    residue = packet[0:7]
+    packet = packet[7:-1]
+    assert len(packet) % 8 == 0
+
+    from schc_base import SCHCObject
+    message = SCHCObject.bits_2_bytes(packet)
+    with open("received.txt", "w", encoding="utf-8") as received_file:
+        received_file.write(message.decode("ascii"))
+        received_file.write("\nAnd residue:\t{}\n".format(residue))

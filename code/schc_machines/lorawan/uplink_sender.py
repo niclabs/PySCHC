@@ -1,9 +1,12 @@
 """ uplink_sender: Uplink sender state machine """
 
 from __future__ import annotations
+
+from typing import Iterator
+
 from schc_base import Tile, Bitmap
 from schc_machines import SCHCSender, AckOnError
-from schc_messages import SCHCMessage, RegularSCHCFragment, All1SCHCFragment
+from schc_messages import SCHCMessage, RegularSCHCFragment, All1SCHCFragment, SCHCAck
 from schc_messages.schc_header import WField
 from schc_protocols import SCHCProtocol
 
@@ -90,12 +93,10 @@ class UplinkSender(AckOnError, SCHCSender):
                         self.state_machine.retransmission_timer.reset()
                         self.state_machine.state.enter_state()
                         break
-            elif len(self.state_machine.tiles) == 1:
+            else:
                 last_tile = self.state_machine.tiles.pop(0)
-                regular_message.add_tile(last_tile)
                 self.state_machine.sent_tiles.append(last_tile)
                 self.state_machine.__last_window__ = True
-            else:
                 all1 = All1SCHCFragment(
                     self.state_machine.__rule_id__,
                     self.state_machine.protocol.id,
@@ -103,9 +104,12 @@ class UplinkSender(AckOnError, SCHCSender):
                     self.state_machine.__current_window__,
                     self.state_machine.rcs
                 )
+                all1.add_tile(last_tile)
+                self._logger_.schc_message(all1)
                 self.state_machine.state = self.state_machine.states["waiting_phase"]
                 self.state_machine.state.enter_state()
                 self.state_machine.retransmission_timer.reset()
+                all1.add_padding()
                 return all1
             regular_message.add_padding()
             self._logger_.schc_message(regular_message)
@@ -133,10 +137,10 @@ class UplinkSender(AckOnError, SCHCSender):
 
             Raises
             ------
-            RuntimeError :
+            GeneratorExit
                 Awaits for Ack
             """
-            raise RuntimeError("Awaits for Ack after a windows was sent")
+            raise GeneratorExit("Awaits for Ack after a windows was sent")
 
         def receive_schc_ack(self, schc_message: SCHCAck) -> None:
             """
@@ -155,24 +159,28 @@ class UplinkSender(AckOnError, SCHCSender):
                 # TODO
                 return
             else:
-                self.state_machine.bitmap = Bitmap(self.state_machine.protocol)
-                for fcn in schc_message.header.compressed_bitmap.bitmap:
-                    self.state_machine.bitmap.tile_received(
-                        self.state_machine.protocol.WINDOW_SIZE - 1 - fcn
-                    )
-                self._logger_.debug("Bitmap received: {}".format(self.state_machine.bitmap))
-                while len(self.state_machine.bitmap) < self.state_machine.protocol.WINDOW_SIZE:
-                    self.state_machine.bitmap.append(True)
-                if sum(self.state_machine.bitmap) == len(self.state_machine.bitmap):
-                    self.state_machine.state = self.state_machine.states["sending_phase"]
-                    self.state_machine.retransmission_timer.stop()
-                    self.state_machine.__current_window__ += 1
-                    self.state_machine.__fcn__ = self.state_machine.protocol.WINDOW_SIZE - 1
-                    self.state_machine.state.enter_state()
-                    return
+                if schc_message.header.c.c:
+                    if self.state_machine.__last_window__:
+                        self.state_machine.state = self.state_machine.states["end"]
+                        self.state_machine.state.enter_state()
+                        return
+                    else:
+                        # TODO
+                        return
                 else:
-                    # TODO
-                    return
+                    self.state_machine.bitmap = Bitmap.from_compress_bitmap(
+                        schc_message.header.compressed_bitmap.bitmap, self.state_machine.protocol)
+                    self._logger_.debug("Received bitmap: {}".format(self.state_machine.bitmap))
+                    if sum(self.state_machine.bitmap) == len(self.state_machine.bitmap):
+                        self.state_machine.state = self.state_machine.states["sending_phase"]
+                        self.state_machine.retransmission_timer.stop()
+                        self.state_machine.__current_window__ += 1
+                        self.state_machine.__fcn__ = self.state_machine.protocol.WINDOW_SIZE - 1
+                        self.state_machine.state.enter_state()
+                        return
+                    else:
+                        # TODO
+                        return
 
     def __init__(self, protocol: SCHCProtocol, payload: bytes,
                  residue: str = "", dtag: int = None) -> None:
@@ -182,6 +190,9 @@ class UplinkSender(AckOnError, SCHCSender):
         self.states["waiting_phase"] = UplinkSender.WaitingPhase(self)
         self.state = self.states["initial_phase"]
         self.state.enter_state()
+        if len(self.remaining_packet) % self.protocol.L2_WORD != 0:
+            padding = "0" * (self.protocol.L2_WORD - (len(self.remaining_packet) % self.protocol.L2_WORD))
+            self.rcs = self.protocol.calculate_rcs(self.remaining_packet + padding)
         self.tiles = list()
         self.sent_tiles = list()
         self.state.__generate_tiles__()

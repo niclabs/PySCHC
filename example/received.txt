@@ -1,13 +1,4 @@
-""" test_sender: Test script Sender side"""
 
-import logging
-import socket
-from common_methods import messaging_loop, HOST, get_mtu, send_socket, receive_socket
-
-RECEIVER_PORT = 50007
-SENDER_PORT = 50006
-
-MESSAGE = """
 Abstract
 
    The Static Context Header Compression (SCHC) specification describes
@@ -51,25 +42,5 @@ Copyright Notice
    include Simplified BSD License text as described in Section 4.e of
    the Trust Legal Provisions and are provided without warranty as
    described in the Simplified BSD License.
-""".encode("ascii")
 
-RESIDUE = "0101100"
-
-socket_rx = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-socket_rx.bind((HOST, RECEIVER_PORT))
-socket_rx.listen(1)
-
-
-if __name__ == '__main__':
-    logging.basicConfig(level=logging.DEBUG)
-
-    from schc_machines.lorawan import UplinkSender
-    from schc_protocols import LoRaWAN
-
-    sender = UplinkSender(
-        LoRaWAN(LoRaWAN.UPLINK),
-        MESSAGE,
-        RESIDUE
-    )
-
-    messaging_loop(sender, socket_rx, SENDER_PORT)
+And residue:	0101100
