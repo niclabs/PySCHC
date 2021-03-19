@@ -1,8 +1,14 @@
 # PySCHC
 
-Code of fragmentation layer of SCHC protocol implemented in Python to be loaded on a [PyCOM](https://pycom.io/) device.
+Code of SCHC protocol implemented in Python to be loaded on a [PyCOM](https://pycom.io/) device.
 
-## Installation
+## Compression
+
+<Anoten lo que necesiten>
+
+## Fragmentation
+
+### Installation
 
 <altoque bodoque>
 
