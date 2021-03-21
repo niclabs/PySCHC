@@ -2,10 +2,9 @@
 
 from __future__ import annotations
 from typing import List
-
 from schc_base import Bitmap
 from schc_machines import SCHCReceiver, AckOnError
-from schc_messages import RegularSCHCFragment, SCHCMessage, SCHCAck, All1SCHCFragment
+from schc_messages import SCHCMessage, RegularSCHCFragment, SCHCAck, All1SCHCFragment
 from schc_protocols import SCHCProtocol
 
 
@@ -18,7 +17,7 @@ class UplinkReceiver(AckOnError, SCHCReceiver):
     protocol
     state
     """
-    class ReceivingPhase(SCHCReceiver.ReceiverState, AckOnError):
+    class ReceivingPhase(SCHCReceiver.ReceiverState):
         """
         Receiving Phase of Ack on Error
 
@@ -159,7 +158,7 @@ class UplinkReceiver(AckOnError, SCHCReceiver):
                 # TODO
                 return
 
-    class WaitingPhase(SCHCReceiver.ReceiverState, AckOnError):
+    class WaitingPhase(SCHCReceiver.ReceiverState):
         """
         Waiting Phase of Ack on Error
         """

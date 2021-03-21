@@ -1,9 +1,6 @@
 """ uplink_sender: Uplink sender state machine """
 
 from __future__ import annotations
-
-from typing import Iterator
-
 from schc_base import Tile, Bitmap
 from schc_machines import SCHCSender, AckOnError
 from schc_messages import SCHCMessage, RegularSCHCFragment, All1SCHCFragment, SCHCAck
@@ -14,6 +11,7 @@ from schc_protocols import SCHCProtocol
 class UplinkSender(AckOnError, SCHCSender):
     """
     Uplink Sender State Machine with Ack-on-Error Mode
+    
     Attributes
     ----------
     protocol
@@ -185,6 +183,7 @@ class UplinkSender(AckOnError, SCHCSender):
     def __init__(self, protocol: SCHCProtocol, payload: bytes,
                  residue: str = "", dtag: int = None) -> None:
         super().__init__(protocol, payload, residue=residue, dtag=dtag)
+        AckOnError.__init__(self)
         self.states["initial_phase"] = UplinkSender.InitialPhase(self)
         self.states["sending_phase"] = UplinkSender.SendingPhase(self)
         self.states["waiting_phase"] = UplinkSender.WaitingPhase(self)
