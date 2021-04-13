@@ -199,17 +199,28 @@ class DownlinkReceiver(AckAlways, SCHCReceiver):
 
         def receive_regular_schc_fragment(self, schc_message: RegularSCHCFragment) -> None:
             """
-            Actions when receive a Regular SCHC Fragment
+            Receiving a regular SCHC Fragment to start new window
 
             Parameters
             ----------
             schc_message : RegularSCHCFragment
-                SCHC Message received
+                First regular sent of a new window
 
             Returns
             -------
             None, alter state
             """
+            if schc_message.header.w != self.state_machine.__current_window__:
+                self.state_machine.__current_window__ = schc_message.header.w.w
+                self._logger_.debug("Starting reception of window {}".format(
+                    self.state_machine.__current_window__))
+                self.state_machine.bitmap = Bitmap(self.state_machine.protocol)
+                self.state_machine.state = self.state_machine.states["receiving_phase"]
+                self.enter_state()
+                self.state_machine.state.receive_regular_schc_fragment(schc_message)
+            else:
+                # TODO
+                pass
             return
 
         def receive_all1_schc_fragment(self, schc_message: All1SCHCFragment) -> None:
@@ -225,6 +236,18 @@ class DownlinkReceiver(AckAlways, SCHCReceiver):
             -------
             None, alter state
             """
+            # TODO if window is last window
+            if schc_message.header.w != self.state_machine.__current_window__:
+                self.state_machine.__current_window__ = schc_message.header.w.w
+                self._logger_.debug("Starting reception of window {}".format(
+                    self.state_machine.__current_window__))
+                self.state_machine.bitmap = Bitmap(self.state_machine.protocol)
+                self.state_machine.state = self.state_machine.states["receiving_phase"]
+                self.enter_state()
+                self.state_machine.state.receive_all1_schc_fragment(schc_message)
+            else:
+                # if not last_window: pass
+                # else: TODO
             return
 
         def receive_schc_ack_req(self, schc_message: SCHCAckReq) -> None:
@@ -240,6 +263,15 @@ class DownlinkReceiver(AckAlways, SCHCReceiver):
             -------
             None, alter state
             """
+            # TODO if window is last window and w != window
+            # if w is current window:
+            #   resend ack
+            # else
+            #   self.state_machine.__current_window__ += 1
+            #   self.state_machine.bitmap = Bitmap(...)
+            #   send ack
+            #   change_state(receiving)
+            
             return
 
         def receive_schc_sender_abort(self, schc_message: SCHCSenderAbort) -> None:
