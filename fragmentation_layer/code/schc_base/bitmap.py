@@ -96,6 +96,38 @@ class Bitmap:
         calculated_bitmap.__bitmap__ += [True] * (protocol.WINDOW_SIZE - len(bitmap))
         return calculated_bitmap
 
+    def is_missing(self) -> bool:
+        """
+        Return whether or not there are tiles missing
+
+        Returns
+        -------
+        bool :
+            True if there are missing tiles
+        """
+        return len(self.__bitmap__) > sum(self.__bitmap__)
+
+    def get_missing(self, fcn: bool = False) -> int:
+        """
+        Gets first index of reported missing tile. If fcn is True, passes
+        as fcn
+
+        Parameters
+        ----------
+        fcn : bool, optional
+            If fcn is True, missing as fcn
+
+        Returns
+        -------
+        int :
+            First index with missing tile
+        """
+        i = self.__bitmap__.index(False)
+        if fcn:
+            return self.protocol.WINDOW_SIZE - 1 - i
+        else:
+            return i
+
     def __repr__(self) -> str:
         return "".join(["1" if i else "0" for i in self.__bitmap__])
 

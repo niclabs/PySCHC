@@ -1,10 +1,10 @@
 """ schc_sender: SCHC Finite State Machine Sender Behaviour """
 
 from __future__ import annotations
-from abc import ABC, abstractmethod
+from abc import ABC
 from schc_base import SCHCTimer, SCHCObject
-from schc_messages import SCHCAck, SCHCReceiverAbort, SCHCMessage
 from schc_machines import SCHCFiniteStateMachine
+from schc_messages import SCHCAck, SCHCReceiverAbort
 from schc_parsers import SCHCParser
 from schc_protocols import SCHCProtocol
 
@@ -34,27 +34,6 @@ class SCHCSender(SCHCFiniteStateMachine, ABC):
         def __init__(self, state_machine: SCHCSender) -> None:
             super().__init__(state_machine)
 
-        def generate_message(self, mtu: int) -> SCHCMessage:
-            """
-            Generates a SCHC message to send
-
-            Parameters
-            ----------
-            mtu : int
-                Size of MTU available (in bytes)
-
-            Returns
-            -------
-            SCHCMessage:
-                SCHC Message to send
-
-            Raises
-            ------
-            RuntimeError
-                No more SCHC Message to send on current state
-            """
-            return super().generate_message(mtu)
-
         def receive_message(self, message: bytes) -> None:
             """
             Does something when receiving bytes
@@ -73,7 +52,7 @@ class SCHCSender(SCHCFiniteStateMachine, ABC):
             ValueError
                 In case bytes received could not be decoded to a SCHC Message
             """
-            schc_message = SCHCParser.from_bytes(self.state_machine.protocol, message)
+            schc_message = SCHCParser.from_bytes(self.sm.protocol, message)
             if isinstance(schc_message, SCHCAck):
                 return self.receive_schc_ack(schc_message)
             elif isinstance(schc_message, SCHCReceiverAbort):
@@ -113,13 +92,10 @@ class SCHCSender(SCHCFiniteStateMachine, ABC):
             Returns
             -------
             None, alter state
-
-            Raises
-            ------
-            RuntimeError
-                Behaviour unreachable
             """
-            raise RuntimeError("Behaviour unreachable")
+            self.sm.state = self.sm.states["error"]
+            self.sm.state.enter_state()
+            return
 
     def __init__(self, protocol: SCHCProtocol, payload: bytes, residue: str = "", dtag: int = None) -> None:
         """

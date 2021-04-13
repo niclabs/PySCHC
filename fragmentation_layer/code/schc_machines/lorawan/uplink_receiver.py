@@ -1,10 +1,10 @@
 """ uplink_receiver: Uplink receiver state machine """
 
 from __future__ import annotations
-from typing import List
+from machine import Timer
 from schc_base import Bitmap
 from schc_machines import SCHCReceiver, AckOnError
-from schc_messages import SCHCMessage, RegularSCHCFragment, SCHCAck, All1SCHCFragment
+from schc_messages import SCHCMessage, RegularSCHCFragment, SCHCAck, All1SCHCFragment, SCHCAckReq, SCHCSenderAbort
 from schc_protocols import SCHCProtocol
 
 
@@ -32,17 +32,22 @@ class UplinkReceiver(AckOnError, SCHCReceiver):
             super().__init__(state_machine)
             self.__success__ = False
 
-        def on_expiration_time(self) -> None:
+        def on_expiration_time(self, alarm: Timer) -> None:
             """
             Executed on expiration time
+
+            Parameters
+            ----------
+            alarm : Timer
+                Timer that triggers expiration
 
             Returns
             -------
             None, alter state to error
             """
-            self.state_machine.__exit_msg__ = "Connection timeout"
-            self.state_machine.state = self.state_machine.states["error"]
-            self.state_machine.state.enter_state()
+            self.sm.__exit_msg__ = "Connection timeout"
+            self.sm.state = self.sm.states["error"]
+            self.sm.state.enter_state()
             return
 
         def generate_message(self, mtu: int) -> SCHCMessage:
@@ -64,10 +69,10 @@ class UplinkReceiver(AckOnError, SCHCReceiver):
             GeneratorExit
                 No message to be send
             """
-            if self.state_machine.__last_window__ and self.__success__:
-                self.state_machine.state = self.state_machine.states["end"]
-                self.state_machine.state.enter_state()
-                message = self.state_machine.message_to_send.pop(0)
+            if self.sm.__last_window__ and self.__success__:
+                self.sm.state = self.sm.states["end"]
+                self.sm.state.enter_state()
+                message = self.sm.message_to_send.pop(0)
                 self._logger_.schc_message(message)
                 return message
             raise GeneratorExit("No message to send, keep receiving")
@@ -84,31 +89,37 @@ class UplinkReceiver(AckOnError, SCHCReceiver):
             -------
             None, alter state
             """
-            if self.state_machine.__current_window__ == schc_message.header.w:
+            if self.sm.__cw__ == schc_message.header.w:
                 fcn = schc_message.header.fcn.fcn
-                self.state_machine.__fcn__ = fcn
-                tiles_received = schc_message.payload.size // self.state_machine.protocol.TILE_SIZE
+                self.sm.__fcn__ = fcn
+                tiles_received = schc_message.payload.size // self.sm.protocol.TILE_SIZE
                 tiles = schc_message.payload.as_bytes()
                 self._logger_.debug("Window received: {}\tTiles from: {} to {}".format(
                     schc_message.header.w.w, fcn, fcn - tiles_received + 1))
                 for tile in range(tiles_received):
-                    self.state_machine.payload.add_content(tiles[0:self.state_machine.protocol.TILE_SIZE // 8])
-                    tiles = tiles[self.state_machine.protocol.TILE_SIZE // 8:]
-                    self.state_machine.bitmap.tile_received(fcn - tile)
-                    self.state_machine.__fcn__ -= 1
-                    if self.state_machine.__fcn__ == -1:
-                        ack = SCHCAck(self.state_machine.__rule_id__,
-                                      self.state_machine.protocol.id, c=False,
-                                      dtag=self.state_machine.__dtag__,
-                                      w=self.state_machine.__current_window__,
-                                      compressed_bitmap=self.state_machine.bitmap.generate_compress())
+                    self.sm.payload.add_content(tiles[0:self.sm.protocol.TILE_SIZE // 8])
+                    tiles = tiles[self.sm.protocol.TILE_SIZE // 8:]
+                    self.sm.bitmaps[
+                        self.sm.__cw__
+                    ].tile_received(fcn - tile)
+                    self.sm.__fcn__ -= 1
+                    if self.sm.__fcn__ == -1:
+                        ack = SCHCAck(self.sm.__rule_id__,
+                                      self.sm.protocol.id, c=False,
+                                      dtag=self.sm.__dtag__,
+                                      w=self.sm.__cw__,
+                                      compressed_bitmap=self.sm.bitmaps[
+                                          self.sm.__cw__
+                                      ].generate_compress())
                         ack.add_padding()
-                        self.state_machine.message_to_send.append(ack)
-                        self.state_machine.state = self.state_machine.states["waiting_phase"]
-                        self.state_machine.state.enter_state()
+                        self.sm.message_to_send.append(ack)
+                        self.sm.state = self.sm.states["waiting_phase"]
+                        self.sm.state.enter_state()
                         return
                 self._logger_.debug("Current bitmap: {}. Waiting for w={} fcn={} tile".format(
-                    self.state_machine.bitmap, self.state_machine.__current_window__, self.state_machine.__fcn__)
+                    self.sm.bitmaps[
+                        self.sm.__cw__
+                    ], self.sm.__cw__, self.sm.__fcn__)
                 )
             else:
                 self._logger_.debug("Different window received")
@@ -116,7 +127,7 @@ class UplinkReceiver(AckOnError, SCHCReceiver):
 
         def receive_all1_schc_fragment(self, schc_message: All1SCHCFragment) -> None:
             """
-            Behaviour of when receiving All-1 SCHC Fragment
+            Behaviour when receiving All-1 SCHC Fragment
 
             Parameters
             ----------
@@ -127,12 +138,12 @@ class UplinkReceiver(AckOnError, SCHCReceiver):
             -------
             None, alter state
             """
-            if self.state_machine.__current_window__ == schc_message.header.w:
-                self.state_machine.__last_window__ = True
+            if self.sm.__cw__ == schc_message.header.w:
+                self.sm.__last_window__ = True
                 last_payload = schc_message.payload.as_bytes()
-                self.state_machine.payload.add_content(last_payload)
-                rcs = self.state_machine.protocol.calculate_rcs(
-                    self.state_machine.payload.as_bits()
+                self.sm.payload.add_content(last_payload)
+                rcs = self.sm.protocol.calculate_rcs(
+                    self.sm.payload.as_bits()
                 )
                 integrity = rcs == schc_message.header.rcs.rcs
                 if integrity:
@@ -144,19 +155,50 @@ class UplinkReceiver(AckOnError, SCHCReceiver):
                         schc_message.header.rcs.rcs,
                         rcs
                     ))
-                    compressed_bitmap = self.state_machine.bitmap.generate_compress()
-                ack = SCHCAck(self.state_machine.__rule_id__,
-                              self.state_machine.protocol.id,
+                    compressed_bitmap = self.sm.bitmaps[
+                        self.sm.__cw__
+                    ].generate_compress()
+                ack = SCHCAck(self.sm.__rule_id__,
+                              self.sm.protocol.id,
                               c=integrity,
-                              dtag=self.state_machine.__dtag__,
-                              w=self.state_machine.__current_window__,
+                              dtag=self.sm.__dtag__,
+                              w=self.sm.__cw__,
                               compressed_bitmap=compressed_bitmap)
                 ack.add_padding()
-                self.state_machine.message_to_send.append(ack)
+                self.sm.message_to_send.append(ack)
                 return
             else:
                 # TODO
                 return
+
+        def receive_schc_ack_req(self, schc_message: SCHCAckReq) -> None:
+            """
+            Behaviour when receiving a SCHCAck Request
+
+            Parameters
+            ----------
+            schc_message : SCHCAckReq
+                Message requesting an Ack
+
+            Returns
+            -------
+            None, alter state
+            """
+            for w in sorted(self.sm.bitmaps.keys()):
+                bitmap = self.sm.bitmaps[w]
+                if bitmap.is_missing():
+                    self._logger_.debug("Window {} has missing tiles".format(w))
+                    self.sm.message_to_send.append(
+                        SCHCAck(self.sm.__rule_id__, self.sm.protocol.id,
+                                False, w=w, compressed_bitmap=bitmap.generate_compress())
+                    )
+                    return
+            bitmap = self.sm.bitmaps[self.sm.__cw__]
+            self.sm.message_to_send.append(
+                SCHCAck(self.sm.__rule_id__, self.sm.protocol.id,
+                        False, w=self.sm.__cw__, compressed_bitmap=bitmap.generate_compress())
+            )
+            return
 
     class WaitingPhase(SCHCReceiver.ReceiverState):
         """
@@ -177,10 +219,10 @@ class UplinkReceiver(AckOnError, SCHCReceiver):
             SCHCMessage :
                 Message to send
             """
-            if len(self.state_machine.message_to_send) != 0:
-                message = self.state_machine.message_to_send.pop(0)
+            if len(self.sm.message_to_send) != 0:
+                message = self.sm.message_to_send.pop(0)
                 if (message.size // 8) > mtu:
-                    self.state_machine.message_to_send.insert(0, message)
+                    self.sm.message_to_send.insert(0, message)
                     self._logger_.warning(
                         "Cannot send message, no bandwidth available. MTU = {} < Message size = {}".format(
                             mtu, message.size // 8
@@ -204,16 +246,53 @@ class UplinkReceiver(AckOnError, SCHCReceiver):
             -------
             None, alter state
             """
-            if schc_message.header.w != self.state_machine.__current_window__:
-                self.state_machine.__current_window__ = schc_message.header.w.w
+            if schc_message.header.w != self.sm.__cw__:
+                self.sm.__cw__ = schc_message.header.w.w
                 self._logger_.debug("Starting reception of window {}".format(
-                    self.state_machine.__current_window__))
-                self.state_machine.bitmap = Bitmap(self.state_machine.protocol)
-                self.state_machine.state = self.state_machine.states["receiving_phase"]
+                    self.sm.__cw__))
+                self.sm.bitmaps[self.sm.__cw__] = Bitmap(self.sm.protocol)
+                self.sm.state = self.sm.states["receiving_phase"]
                 self.enter_state()
-                self.state_machine.state.receive_regular_schc_fragment(schc_message)
+                self.sm.state.receive_regular_schc_fragment(schc_message)
             else:
-                # TODO
+                self._logger_.debug("Receiving failed ones")
+                fcn = schc_message.header.fcn.fcn
+                tiles_received = schc_message.payload.size // self.sm.protocol.TILE_SIZE
+                tiles = schc_message.payload.as_bytes()
+                for tile in range(tiles_received):
+                    self._logger_.debug("Window received: {}\tTile {}".format(
+                        schc_message.header.w.w, fcn))
+                    self.sm.payload.add_content(tiles[0:self.sm.protocol.TILE_SIZE // 8])
+                    tiles = tiles[self.sm.protocol.TILE_SIZE // 8:]
+                    self.sm.bitmaps[self.sm.__cw__].tile_received(fcn)
+                    if self.sm.bitmaps[self.sm.__cw__].is_missing():
+                        fcn = self.sm.bitmaps[self.sm.__cw__].get_missing(fcn=True)
+                    else:
+                        break
+            return
+
+        def receive_schc_ack_req(self, schc_message: SCHCAckReq) -> None:
+            """
+            Behaviour when SCHC Ack Request
+
+            Parameters
+            ----------
+            schc_message : SCHCAckReq
+                SCHC message received
+
+            Returns
+            -------
+            None, alter state
+            """
+            w = schc_message.header.w.w
+            if w not in self.sm.bitmaps.keys():
+                return
+            if not self.sm.__last_window__:
+                self.sm.message_to_send.append(
+                    SCHCAck(self.sm.__rule_id__, self.sm.protocol.id,
+                            c=False, w=w, compressed_bitmap=self.sm.bitmaps[w])
+                )
+            else:
                 pass
             return
 

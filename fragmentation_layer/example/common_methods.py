@@ -1,11 +1,16 @@
 """ common_methods on example """
 
+import random
 import socket
 import logging
 from schc_machines import SCHCFiniteStateMachine
 
 HOST = "127.0.0.1"
 MTU = 50
+SEED = 8
+PROBABILITY_OF_FAILURE = 0.05
+
+random.seed(SEED)
 
 
 def get_mtu() -> int:
@@ -18,6 +23,18 @@ def get_mtu() -> int:
         MTU available
     """
     return MTU
+
+
+def is_this_loss() -> bool:
+    """
+    Returns whether the send process was done
+
+    Returns
+    -------
+    bool :
+        True if sent does not occur
+    """
+    return random.random() < PROBABILITY_OF_FAILURE
 
 
 def send_socket(msg: bytes, port: int) -> None:
@@ -83,9 +100,12 @@ def messaging_loop(machine: SCHCFiniteStateMachine, socket_rx: socket.socket, se
         while True:
             try:
                 mtu = get_mtu()
+                lost = is_this_loss()
                 message = machine.generate_message(mtu)
                 logging.info("Current mtu: {}".format(mtu))
-                send_socket(message.as_bytes(), sender_port)
+                logging.info("Package sent: {}".format(not lost))
+                if not lost:
+                    send_socket(message.as_bytes(), sender_port)
             except GeneratorExit:
                 break
             except SystemExit as e:
