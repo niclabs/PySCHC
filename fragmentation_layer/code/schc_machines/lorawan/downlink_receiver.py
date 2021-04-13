@@ -16,16 +16,252 @@ class DownlinkReceiver(AckAlways, SCHCReceiver):
     protocol
     state
     """
-    class TemplatePhase(SCHCReceiver.ReceiverState):
+    class ReceivingPhase(SCHCReceiver.ReceiverState):
         """
-        # TODO:
-        This is a state. Change as needed and copy/paste to 
-        implement other state
+        Receiving Phase of Ack Always
         """
-        __name__ = "Name this phase"
+        __name__ = "Receiving phase"
 
-        # You can delete any method that is not using on the state
-        # Or implement any of the following:
+        def generate_message(self, mtu: int) -> SCHCMessage:
+            """
+            Send messages saved on message_to_send variable
+
+            Parameters
+            ----------
+            mtu : int
+                MTU available
+
+            Returns
+            -------
+            SCHCMessage :
+                A message saved to be send
+
+            Raises
+            ------
+            GeneratorExit
+                No message to be send
+            """
+            if self.state_machine.__last_window__ and self.__success__:
+                self.state_machine.state = self.state_machine.states["end"]
+                self.state_machine.state.enter_state()
+                message = self.state_machine.message_to_send.pop(0)
+                self._logger_.schc_message(message)
+                return message
+            raise GeneratorExit("No message to send, keep receiving")
+
+        def receive_regular_schc_fragment(self, schc_message: RegularSCHCFragment) -> None:
+            """
+            Actions when receive a Regular SCHC Fragment
+
+            Parameters
+            ----------
+            schc_message : RegularSCHCFragment
+                SCHC Message received
+
+            Returns
+            -------
+            None, alter state
+            """
+            if self.state_machine.__current_window__ == schc_message.header.w:
+                self._logger_.debug("Window received: {}\tTiles from: 0 to 0".format(
+                    schc_message.header.w.w))
+                self.state_machine.payload.add_content(schc_message.payload.as_bytes())
+                self.state_machine.bitmap.tile_received(schc_message.header.fcn.fcn)
+                ack = SCHCAck(self.state_machine.__rule_id__,
+                              self.state_machine.protocol.id, c=False,
+                              dtag=self.state_machine.__dtag__,
+                              w=self.state_machine.__current_window__,
+                              compressed_bitmap=self.state_machine.bitmap.generate_compress()
+                )
+                ack.add_padding()
+                self.state_machine.message_to_send.append(ack)
+                self.state_machine.state = self.state_machine.states["waiting_phase"]
+                self.state_machine.state.enter_state()
+                return
+            else:
+                self._logger_.debug("Different window received")
+            return
+
+        def receive_all1_schc_fragment(self, schc_message: All1SCHCFragment) -> None:
+            """
+            Behaviour of when receiving All-1 SCHC Fragment
+
+            Parameters
+            ----------
+            schc_message : All1SCHCFragment
+                Last fragment to be received
+
+            Returns
+            -------
+            None, alter state
+            """
+            if self.state_machine.__current_window__ == schc_message.header.w:
+                self.state_machine.__last_window__ = True
+                last_payload = schc_message.payload.as_bytes()
+                self.state_machine.payload.add_content(last_payload)
+                # TODO check what happens with padding
+                rcs = self.state_machine.protocol.calculate_rcs(
+                    self.state_machine.payload.as_bits()
+                )
+                integrity = rcs == schc_message.header.rcs.rcs
+                if integrity:
+                    self._logger_.debug("Integrity check successful")
+                    compressed_bitmap = None
+                    next_state = self.state_machine.states["cleanup_phase"]
+                else:
+                    self._logger_.error("Integrity check failed:\tSender: {}\tReceiver:{}".format(
+                        schc_message.header.rcs.rcs,
+                        rcs
+                    ))
+                    compressed_bitmap = self.state_machine.bitmap.generate_compress()
+                    next_state = self.state_machine.states["waiting_phase"]
+                ack = SCHCAck(self.state_machine.__rule_id__,
+                              self.state_machine.protocol.id,
+                              c=integrity,
+                              dtag=self.state_machine.__dtag__,
+                              w=self.state_machine.__current_window__,
+                              compressed_bitmap=compressed_bitmap
+                )
+                ack.add_padding()
+                self.state_machine.message_to_send.append(ack)
+                self.state_machine.state = next_state
+                self.state_machine.state.enter_state()
+                return
+            else:
+                self._logger_.debug("Different window received")
+                return
+
+        def receive_schc_ack_req(self, schc_message: SCHCAckReq) -> None:
+            """
+            Actions when receive a SCHC Ack Request
+
+            Parameters
+            ----------
+            schc_message : SCHCAckReq
+                SCHC Message received
+
+            Returns
+            -------
+            None, alter state
+            """
+            # if w current_window:
+            #   sendACK(bad)
+            # else
+            #   return silently
+
+        def receive_schc_sender_abort(self, schc_message: SCHCSenderAbort) -> None:
+            """
+            Actions when receive a SCHC Sender Abort
+
+            Parameters
+            ----------
+            schc_message : SCHCSenderAbort
+                SCHC Message received
+
+            Returns
+            -------
+            None, alter state
+            """
+            return
+
+    class WaitingPhase(SCHCReceiver.ReceiverState):
+        """
+        Waiting Phase of Ack Always
+        """
+        __name__ = "Waiting phase"
+
+        def generate_message(self, mtu: int) -> SCHCMessage:
+            """
+            Send an SCHCAcK
+            Parameters
+            ----------
+            mtu : int
+                Current mtu
+
+            Returns
+            -------
+            SCHCMessage :
+                Message to send
+            """
+            if len(self.state_machine.message_to_send) != 0:
+                message = self.state_machine.message_to_send.pop(0)
+                if (message.size // 8) > mtu:
+                    self.state_machine.message_to_send.insert(0, message)
+                    self._logger_.warning(
+                        "Cannot send message, no bandwidth available. MTU = {} < Message size = {}".format(
+                            mtu, message.size // 8
+                        )
+                    )
+                self._logger_.schc_message(message)
+                return message
+            else:
+                raise GeneratorExit("No message to send, keep receiving")
+
+        def receive_regular_schc_fragment(self, schc_message: RegularSCHCFragment) -> None:
+            """
+            Actions when receive a Regular SCHC Fragment
+
+            Parameters
+            ----------
+            schc_message : RegularSCHCFragment
+                SCHC Message received
+
+            Returns
+            -------
+            None, alter state
+            """
+            return
+
+        def receive_all1_schc_fragment(self, schc_message: All1SCHCFragment) -> None:
+            """
+            Actions when receive a All-1 SCHC Fragment
+
+            Parameters
+            ----------
+            schc_message : All1SCHCFragment
+                SCHC Message received
+
+            Returns
+            -------
+            None, alter state
+            """
+            return
+
+        def receive_schc_ack_req(self, schc_message: SCHCAckReq) -> None:
+            """
+            Actions when receive a SCHC Ack Request
+
+            Parameters
+            ----------
+            schc_message : SCHCAckReq
+                SCHC Message received
+
+            Returns
+            -------
+            None, alter state
+            """
+            return
+
+        def receive_schc_sender_abort(self, schc_message: SCHCSenderAbort) -> None:
+            """
+            Actions when receive a SCHC Sender Abort
+
+            Parameters
+            ----------
+            schc_message : SCHCSenderAbort
+                SCHC Message received
+
+            Returns
+            -------
+            None, alter state
+            """
+            return
+
+    class CleanupPhase(SCHCReceiver.ReceiverState):
+        """
+        Clean-up Phase of Ack Always
+        """
+        __name__ = "Cleanup phase"
 
         def generate_message(self, mtu: int) -> SCHCMessage:
             """
