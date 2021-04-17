@@ -1,7 +1,6 @@
 """ schc_parser: SCHCParser class that generate message from bytes """
 
 from schc_protocols import SCHCProtocol
-from schc_messages import SCHCMessage
 
 
 class SCHCParser:
@@ -10,7 +9,7 @@ class SCHCParser:
     """
 
     @staticmethod
-    def from_bytes(protocol: SCHCProtocol, message: bytes) -> SCHCMessage:
+    def from_bytes(protocol, message):
         """
         Generates SCHC Message from bytes received
 

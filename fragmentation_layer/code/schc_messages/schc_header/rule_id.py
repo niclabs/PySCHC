@@ -1,9 +1,8 @@
 """rule_id: RuleId Class"""
 
 from math import log
-from typing import Tuple
 from schc_base import SCHCObject
-from schc_protocols import get_protocol
+from schc_protocols import get_protocol, SCHCProtocol
 
 
 class RuleID(SCHCObject):
@@ -20,7 +19,7 @@ class RuleID(SCHCObject):
         Size used by rule_id, in bits
     """
 
-    def __init__(self, rule_id: int, protocol: int = 1) -> None:
+    def __init__(self, rule_id, protocol=1):
         """
         RuleID constructor
 
@@ -35,7 +34,7 @@ class RuleID(SCHCObject):
         self.size = self.protocol.RULE_SIZE
         assert log(self.rule_id, 2) + 1 <= self.size, "Rule ID uncodified on this specified protocol"
 
-    def as_bytes(self) -> Tuple[bytes, ...]:
+    def as_bytes(self):
         """
         Returns the bytes representation of the SCHC Header
 
@@ -51,7 +50,7 @@ class RuleID(SCHCObject):
         else:
             raise NotImplemented("Just LoRaWAN protocol is currently implemented")
 
-    def as_bits(self) -> str:
+    def as_bits(self):
         """
         Representation of bits sequence
 

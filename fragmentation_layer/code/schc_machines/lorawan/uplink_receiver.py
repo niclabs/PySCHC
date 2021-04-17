@@ -4,8 +4,7 @@ from __future__ import annotations
 from machine import Timer
 from schc_base import Bitmap
 from schc_machines import SCHCReceiver, AckOnError
-from schc_messages import SCHCMessage, RegularSCHCFragment, SCHCAck, All1SCHCFragment, SCHCAckReq, SCHCSenderAbort
-from schc_protocols import SCHCProtocol
+from schc_messages import RegularSCHCFragment, SCHCAck, All1SCHCFragment, SCHCAckReq
 
 
 class UplinkReceiver(AckOnError, SCHCReceiver):
@@ -28,11 +27,11 @@ class UplinkReceiver(AckOnError, SCHCReceiver):
         """
         __name__ = "Receiving Phase"
 
-        def __init__(self, state_machine: UplinkReceiver) -> None:
+        def __init__(self, state_machine: UplinkReceiver):
             super().__init__(state_machine)
             self.__success__ = False
 
-        def on_expiration_time(self, alarm: Timer) -> None:
+        def on_expiration_time(self, alarm: Timer):
             """
             Executed on expiration time
 
@@ -50,7 +49,7 @@ class UplinkReceiver(AckOnError, SCHCReceiver):
             self.sm.state.enter_state()
             return
 
-        def generate_message(self, mtu: int) -> SCHCMessage:
+        def generate_message(self, mtu: int):
             """
             Send messages saved on message_to_send variable
 
@@ -77,7 +76,7 @@ class UplinkReceiver(AckOnError, SCHCReceiver):
                 return message
             raise GeneratorExit("No message to send, keep receiving")
 
-        def receive_regular_schc_fragment(self, schc_message: RegularSCHCFragment) -> None:
+        def receive_regular_schc_fragment(self, schc_message):
             """
 
             Parameters
@@ -125,7 +124,7 @@ class UplinkReceiver(AckOnError, SCHCReceiver):
                 self._logger_.debug("Different window received")
             return
 
-        def receive_all1_schc_fragment(self, schc_message: All1SCHCFragment) -> None:
+        def receive_all1_schc_fragment(self, schc_message):
             """
             Behaviour when receiving All-1 SCHC Fragment
 
@@ -171,7 +170,7 @@ class UplinkReceiver(AckOnError, SCHCReceiver):
                 # TODO
                 return
 
-        def receive_schc_ack_req(self, schc_message: SCHCAckReq) -> None:
+        def receive_schc_ack_req(self, schc_message):
             """
             Behaviour when receiving a SCHCAck Request
 
@@ -206,7 +205,7 @@ class UplinkReceiver(AckOnError, SCHCReceiver):
         """
         __name__ = "Waiting Phase"
 
-        def generate_message(self, mtu: int) -> SCHCMessage:
+        def generate_message(self, mtu):
             """
             Send an SCHCAcK
             Parameters
@@ -233,7 +232,7 @@ class UplinkReceiver(AckOnError, SCHCReceiver):
             else:
                 raise GeneratorExit("No message to send, keep receiving")
 
-        def receive_regular_schc_fragment(self, schc_message: RegularSCHCFragment) -> None:
+        def receive_regular_schc_fragment(self, schc_message):
             """
             Receiving a regular SCHC Fragment to start new window
 
@@ -271,7 +270,7 @@ class UplinkReceiver(AckOnError, SCHCReceiver):
                         break
             return
 
-        def receive_schc_ack_req(self, schc_message: SCHCAckReq) -> None:
+        def receive_schc_ack_req(self, schc_message):
             """
             Behaviour when SCHC Ack Request
 
@@ -296,7 +295,7 @@ class UplinkReceiver(AckOnError, SCHCReceiver):
                 pass
             return
 
-    def __init__(self, protocol: SCHCProtocol, dtag: int = None) -> None:
+    def __init__(self, protocol, dtag=None):
         super().__init__(protocol, dtag=dtag)
         AckOnError.__init__(self)
         self.states["receiving_phase"] = UplinkReceiver.ReceivingPhase(self)

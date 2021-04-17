@@ -1,7 +1,5 @@
 """ bitmap: Bitmap class """
 
-from __future__ import annotations
-from typing import List, Iterable
 from schc_protocols import SCHCProtocol
 
 
@@ -16,7 +14,7 @@ class Bitmap:
     __bitmap__ : List
         List of bits with WINDOW_SIZE length
     """
-    def __init__(self, protocol: SCHCProtocol, short_size: int = None) -> None:
+    def __init__(self, protocol, short_size=None):
         """
         Constructor
 
@@ -34,7 +32,7 @@ class Bitmap:
             self.__bitmap__ = [False] * protocol.WINDOW_SIZE
         return
 
-    def generate_compress(self) -> List[bool]:
+    def generate_compress(self):
         """
         Compress Bitmap of ACK Message
 
@@ -57,7 +55,7 @@ class Bitmap:
                 scissor += 1
             return self.__bitmap__[0:scissor].copy()
 
-    def tile_received(self, fcn: int) -> None:
+    def tile_received(self, fcn):
         """
         Registers a tile was received
 
@@ -74,7 +72,7 @@ class Bitmap:
         return
 
     @staticmethod
-    def from_compress_bitmap(bitmap: List[bool], protocol: SCHCProtocol) -> Bitmap:
+    def from_compress_bitmap(bitmap, protocol):
         """
         Calculated bitmap from bitmap of compress_bitmap on header
         of a message
@@ -96,7 +94,7 @@ class Bitmap:
         calculated_bitmap.__bitmap__ += [True] * (protocol.WINDOW_SIZE - len(bitmap))
         return calculated_bitmap
 
-    def is_missing(self) -> bool:
+    def is_missing(self):
         """
         Return whether or not there are tiles missing
 
@@ -107,7 +105,7 @@ class Bitmap:
         """
         return len(self.__bitmap__) > sum(self.__bitmap__)
 
-    def get_missing(self, fcn: bool = False) -> int:
+    def get_missing(self, fcn=False):
         """
         Gets first index of reported missing tile. If fcn is True, passes
         as fcn
@@ -128,12 +126,12 @@ class Bitmap:
         else:
             return i
 
-    def __repr__(self) -> str:
+    def __repr__(self):
         return "".join(["1" if i else "0" for i in self.__bitmap__])
 
-    def __len__(self) -> int:
+    def __len__(self):
         return len(self.__bitmap__)
 
-    def __iter__(self) -> Iterable:
+    def __iter__(self):
         for bit in self.__bitmap__:
             yield bit

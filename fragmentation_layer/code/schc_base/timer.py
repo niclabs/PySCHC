@@ -17,7 +17,7 @@ class SCHCTimer:
     __max_time__ : int
         Time on expiration
     """
-    def __init__(self, handler: Callable, max_time: int) -> None:
+    def __init__(self, handler, max_time):
         """
         Constructor
 
@@ -31,7 +31,7 @@ class SCHCTimer:
         self.__max_time__ = max_time
         return
 
-    def reset(self) -> None:
+    def reset(self):
         """
         Resets timer
 
@@ -43,7 +43,7 @@ class SCHCTimer:
         self.__alarm__ = Timer.Alarm(self.__handler__, self.__max_time__)
         return
 
-    def stop(self) -> None:
+    def stop(self):
         """
         Stops timer
 

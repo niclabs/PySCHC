@@ -1,13 +1,9 @@
 """schc_fragment: SCHCFragment Class"""
 
-from abc import ABC
-from typing import Dict
-from schc_base import Tile
 from schc_messages import SCHCMessage
-from schc_protocols import get_protocol
 
 
-class SCHCFragment(SCHCMessage, ABC):
+class SCHCFragment(SCHCMessage):
     """
     SCHC Fragment Abstract Class
 
@@ -17,8 +13,7 @@ class SCHCFragment(SCHCMessage, ABC):
     +--------+------+---+-----+------------------+--------------------+
     """
 
-    def __init__(self, rule_id: int, protocol: int = 1, dtag: int = None,
-                 w: int = None, fcn: int = None, rcs: str = None) -> None:
+    def __init__(self, rule_id, protocol=1, dtag=None, w=None, fcn=None, rcs=None):
         """
         Constructor
 
@@ -44,7 +39,7 @@ class SCHCFragment(SCHCMessage, ABC):
         super().__init__(rule_id=rule_id, protocol=protocol, dtag=dtag,
                          w=w, fcn=fcn, rcs=rcs)
 
-    def add_tile(self, tile: Tile) -> int:
+    def add_tile(self, tile):
         """
         Adds tile to payload of message
 
@@ -62,7 +57,7 @@ class SCHCFragment(SCHCMessage, ABC):
         self.size = self.header.size + payload_size + self.padding.size
         return self.size
 
-    def as_bits(self) -> str:
+    def as_bits(self):
         """
         Bits sequence representation
 
@@ -73,7 +68,7 @@ class SCHCFragment(SCHCMessage, ABC):
         """
         return self.header.as_bits() + self.payload.as_bits() + self.padding.as_bits()
 
-    def as_text(self) -> str:
+    def as_text(self):
         """
         Writes message with specifications
 

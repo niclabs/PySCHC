@@ -1,6 +1,5 @@
 """tile: Tile class representation"""
 
-from typing import Tuple, Union
 from schc_base import SCHCObject
 
 
@@ -18,7 +17,7 @@ class Tile(SCHCObject):
         Size in bit
     """
 
-    def __init__(self, content: Union[bytes, str]) -> None:
+    def __init__(self, content):
         """
 
         Parameters
@@ -41,7 +40,7 @@ class Tile(SCHCObject):
         self.size = len(self.encoded_content)
         return
 
-    def as_bytes(self) -> Tuple[bytes, ...]:
+    def as_bytes(self):
         """
         Byte representation of tile
 
@@ -52,7 +51,7 @@ class Tile(SCHCObject):
         """
         return self.content,
 
-    def as_bits(self) -> str:
+    def as_bits(self):
         """
         Representation of bits sequence
 

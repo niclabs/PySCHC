@@ -33,7 +33,7 @@ class SCHCNullField(SCHCField):
         self.u = 0
         self.window_size = 0
 
-    def as_bits(self) -> str:
+    def as_bits(self):
         """
         Represent the field as an empty string
 

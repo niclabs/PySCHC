@@ -1,7 +1,5 @@
 """ uplink_sender: Uplink sender state machine """
 
-from __future__ import annotations
-from typing import List
 from schc_base import Tile, Bitmap
 from schc_machines import SCHCSender, AckOnError
 from schc_messages import SCHCMessage, RegularSCHCFragment, All1SCHCFragment, SCHCAck, SCHCSenderAbort, SCHCAckReq
@@ -24,7 +22,7 @@ class UplinkSender(AckOnError, SCHCSender):
         """
         __name__ = "Initial Phase"
 
-        def __generate_tiles__(self) -> None:
+        def __generate_tiles__(self):
             sm = self.sm
             last_tile_length = len(sm.remaining_packet) % sm.protocol.TILE_SIZE
             last_tile = sm.remaining_packet[-last_tile_length:]
@@ -53,7 +51,7 @@ class UplinkSender(AckOnError, SCHCSender):
         """
         __name__ = "Sending Phase"
 
-        def generate_message(self, mtu: int) -> SCHCMessage:
+        def generate_message(self, mtu):
             """
             Generate regular fragment until all tiles are sent
 
@@ -119,7 +117,7 @@ class UplinkSender(AckOnError, SCHCSender):
         """
         __name__ = "Resending Phase"
 
-        def generate_message(self, mtu: int) -> SCHCMessage:
+        def generate_message(self, mtu):
             """
             Sends fragments reported missing
 
@@ -168,12 +166,12 @@ class UplinkSender(AckOnError, SCHCSender):
         """
         __name__ = "Waiting Phase"
 
-        def __init__(self, state_machine: UplinkSender):
+        def __init__(self, state_machine):
             super().__init__(state_machine)
-            self.pending_state: List[SCHCSender.SenderState] = list()
+            self.pending_state = list()
             return
 
-        def generate_message(self, mtu: int) -> SCHCMessage:
+        def generate_message(self, mtu):
             """
             Wait for ACK
 
@@ -201,7 +199,7 @@ class UplinkSender(AckOnError, SCHCSender):
             else:
                 raise GeneratorExit("Awaits for Ack after a windows was sent")
 
-        def receive_schc_ack(self, schc_message: SCHCAck) -> None:
+        def receive_schc_ack(self, schc_message):
             """
             Receive an Ack after a windows is fully sent
 
@@ -252,8 +250,7 @@ class UplinkSender(AckOnError, SCHCSender):
                 #
                 #         return
 
-    def __init__(self, protocol: SCHCProtocol, payload: bytes,
-                 residue: str = "", dtag: int = None) -> None:
+    def __init__(self, protocol, payload, residue="", dtag=None):
         super().__init__(protocol, payload, residue=residue, dtag=dtag)
         AckOnError.__init__(self)
         self.states["initial_phase"] = UplinkSender.InitialPhase(self)

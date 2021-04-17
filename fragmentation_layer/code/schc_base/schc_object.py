@@ -1,9 +1,7 @@
 """schc_object: SCHC object abstract class (works as an Interface)"""
 
-from abc import ABC, abstractmethod
 
-
-class SCHCObject(ABC):
+class SCHCObject:
     """
     SCHC Object Interface, implemented as an Abstract Base Class
 
@@ -18,15 +16,14 @@ class SCHCObject(ABC):
     bits_2_bytes(bytes_2_bits(some_content)) not necessarily returns some_content, and
     bytes_2_bits(bits_2_bytes(some_content)) not necessarily returns some_content
     """
-    def __init__(self) -> None:
+    def __init__(self):
         """
         Default constructor
         """
         self.size = 0
         return
 
-    @abstractmethod
-    def as_bits(self) -> str:
+    def as_bits(self):
         """
         Represent the SCHCObject content in a string
         representing bit by bit
@@ -38,8 +35,7 @@ class SCHCObject(ABC):
         """
         return ''
 
-    @abstractmethod
-    def as_bytes(self) -> bytes:
+    def as_bytes(self):
         """
         Represent the SCHCObject content as bytes
 
@@ -51,7 +47,7 @@ class SCHCObject(ABC):
         return b''
 
     @staticmethod
-    def bytes_2_bits(content: bytes) -> str:
+    def bytes_2_bits(content: bytes):
         """
         Turns bytes content in a text representation bit by bit
 
@@ -72,7 +68,7 @@ class SCHCObject(ABC):
         return direct
 
     @staticmethod
-    def bits_2_bytes(content: str) -> bytes:
+    def bits_2_bytes(content: str):
         """
         Turns text representation bit by bit in a bytes value
 

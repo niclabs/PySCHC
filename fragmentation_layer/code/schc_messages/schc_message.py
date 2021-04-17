@@ -1,15 +1,11 @@
 """ schc_messages: SCHCMessage class """
 
-from __future__ import annotations
-import logging
-from abc import ABC, abstractmethod
-from typing import Tuple
 from schc_base import SCHCObject
 from schc_protocols import get_protocol, SCHCProtocol
 from schc_messages import SCHCHeader, SCHCPayload, SCHCPadding
 
 
-class SCHCMessage(SCHCObject, ABC):
+class SCHCMessage(SCHCObject):
     """
     SCHCMessage abstract class
 
@@ -30,7 +26,7 @@ class SCHCMessage(SCHCObject, ABC):
     size
     """
 
-    def __init__(self, rule_id: int, protocol: int = 1, **kwargs) -> None:
+    def __init__(self, rule_id, protocol=1, **kwargs):
         """
         Initialize message
 
@@ -62,8 +58,7 @@ class SCHCMessage(SCHCObject, ABC):
         ])
 
     @staticmethod
-    @abstractmethod
-    def from_bytes(received: bytes, protocol: int = 1) -> SCHCMessage:
+    def from_bytes(received, protocol=1):
         """
         Generate an instance of SCHCMessage
 
@@ -81,7 +76,7 @@ class SCHCMessage(SCHCObject, ABC):
         """
         pass
 
-    def as_bytes(self) -> bytes:
+    def as_bytes(self):
         """
         Returns a tuple of bytes of the SCHCMessage
 
@@ -99,7 +94,7 @@ class SCHCMessage(SCHCObject, ABC):
         message = self.as_bits()
         return self.bits_2_bytes(message)
 
-    def add_padding(self) -> int:
+    def add_padding(self):
         """
         Adds padding to match L2 word size
 
@@ -115,8 +110,7 @@ class SCHCMessage(SCHCObject, ABC):
         self.size = self.header.size + self.payload.size + pad_size
         return self.size
 
-    @abstractmethod
-    def as_text(self) -> str:
+    def as_text(self):
         """
         Writes message with specifications
 
@@ -127,7 +121,7 @@ class SCHCMessage(SCHCObject, ABC):
         """
         pass
 
-    def base_as_text(self, header_text: str) -> str:
+    def base_as_text(self, header_text):
         """
         Base to use for all message to simplify implementation
         of as_text() method
@@ -191,8 +185,7 @@ class SCHCMessage(SCHCObject, ABC):
                                      text_tags, content_text)
 
     @staticmethod
-    def _get_common_(received: bytes, protocol: int = 1
-                     ) -> Tuple[SCHCProtocol, str, int, int, int, int]:
+    def _get_common_(received, protocol=1):
         """
         Generates a dictionary with the common attributes
         from SCHC Fragment (Regular and All-1)

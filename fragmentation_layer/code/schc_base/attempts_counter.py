@@ -10,7 +10,7 @@ class AttemptsCounter:
     __max_value__ : int
         Maximum value reachable
     """
-    def __init__(self, max_value: int) -> None:
+    def __init__(self, max_value):
         """
         Constructor
 
@@ -23,7 +23,7 @@ class AttemptsCounter:
         self.__max_value__ = max_value
         return
 
-    def reset(self) -> None:
+    def reset(self):
         """
         Reset counter
 
@@ -34,7 +34,7 @@ class AttemptsCounter:
         self.__count__ = 0
         return
 
-    def increment(self) -> None:
+    def increment(self):
         """
         Increment counter
 
@@ -45,7 +45,7 @@ class AttemptsCounter:
         self.__count__ += 1
         return
 
-    def exceeds_max(self) -> bool:
+    def exceeds_max(self):
         """
         Whether or not counter reaches maximum value
 
