@@ -44,7 +44,7 @@ class DTag(SCHCField):
         if self.t == 0:
             return ""
         else:
-            return "{:0b}".format(self.dtag).zfill(self.t)
+            return self.zfill("{:0b}".format(self.dtag), self.t)
 
     def format_text(self):
         """

@@ -41,7 +41,7 @@ class WField(SCHCField):
         str :
             Bit representation
         """
-        return "{:0b}".format(self.w).zfill(self.m)
+        return self.zfill("{:0b}".format(self.w), self.m)
 
     def format_text(self):
         """

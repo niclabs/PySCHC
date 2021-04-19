@@ -1,7 +1,6 @@
 """ sigfox: Sigfox implementation Protocol """
 
 from schc_protocols import SCHCProtocol
-from warnings import warn
 
 
 class Sigfox(SCHCProtocol):
@@ -18,9 +17,8 @@ class Sigfox(SCHCProtocol):
             Specified Rule ID in case Profile is different
         """
         super().__init__("Sigfox", rule_id)
-        warn("Sigfox is added for testing and completeness, but it is not implemented yet",
-             ImportWarning)
         self.id = 2  # Numeral key of Sigfox
+        raise NotImplementedError("Sigfox is added for testing and completeness, but it is not implemented yet")
 
     def set_rule_id(self, rule_id):
         """

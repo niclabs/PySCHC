@@ -92,3 +92,25 @@ class SCHCObject:
         if len(content) % 8 != 0:
             list_bytes.append(byte)
         return bytes(list_bytes)
+
+    @staticmethod
+    def zfill(bits, length):
+        """
+        Completes with zeroes to the left to match length
+
+        Parameters
+        ----------
+        bits : str
+            Bit sequence as string
+        length : int
+            Wanted length, if length <= len(bits) nothing is done
+        Returns
+        -------
+        str :
+            Sequence of len = length
+        """
+        zeroes = length - len(bits)
+        if zeroes <= 0:
+            return bits
+        else:
+            return "{}{}".format("0" * zeroes, bits)

@@ -42,7 +42,7 @@ class ReassemblyCheckSequence(SCHCField):
             Bit representation
         """
         rcs = int(self.rcs, 0)
-        return "{:0b}".format(rcs).zfill(self.u)
+        return self.zfill("{:0b}".format(rcs), self.u)
 
     def format_text(self):
         """

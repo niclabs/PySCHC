@@ -1,6 +1,5 @@
 """ timer: Timer class """
 
-from typing import Callable
 from machine import Timer
 
 

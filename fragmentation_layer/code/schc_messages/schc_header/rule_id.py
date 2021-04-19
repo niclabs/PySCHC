@@ -40,13 +40,13 @@ class RuleID(SCHCObject):
 
         Returns
         -------
-        Tuple[bytes, ...]:
+        bytes:
             Bytes representation of SCHC Header
         """
         if self.protocol.id == 0:
-            return self.bits_2_bytes(self.as_bits()),
+            return self.bits_2_bytes(self.as_bits())
         elif self.protocol.id == SCHCProtocol.LoRaWAN:
-            return self.bits_2_bytes(self.as_bits().zfill(self.protocol.FPORT_LENGTH)),
+            return self.bits_2_bytes(self.zfill(self.as_bits(), self.protocol.FPORT_LENGTH))
         else:
             raise NotImplemented("Just LoRaWAN protocol is currently implemented")
 
@@ -59,4 +59,4 @@ class RuleID(SCHCObject):
         str :
             Bits sequence as text
         """
-        return "{:0b}".format(self.rule_id).zfill(self.protocol.RULE_SIZE)
+        return self.zfill("{:0b}".format(self.rule_id), self.protocol.RULE_SIZE)

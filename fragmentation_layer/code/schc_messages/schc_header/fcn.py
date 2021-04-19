@@ -45,7 +45,7 @@ class FragmentedCompressedNumber(SCHCField):
             Bit representation
         """
         if self.n != 0:
-            return "{:0b}".format(self.fcn).zfill(self.n)
+            return self.zfill("{:0b}".format(self.fcn), self.n)
         else:
             return ""
 
