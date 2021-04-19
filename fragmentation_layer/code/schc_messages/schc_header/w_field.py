@@ -1,5 +1,4 @@
 """w_field: W Class"""
-from typing import Tuple
 
 from schc_messages.schc_header import SCHCField
 
@@ -16,7 +15,7 @@ class WField(SCHCField):
         Size of W in bits (given according to rule_id)
     """
 
-    def __init__(self, w: int, m: int) -> None:
+    def __init__(self, w, m):
         """
         W constructor
 
@@ -33,7 +32,7 @@ class WField(SCHCField):
         self.size = self.m
         return
 
-    def as_bits(self) -> str:
+    def as_bits(self):
         """
         Returns the bits representation of the SCHC Header
 
@@ -42,9 +41,9 @@ class WField(SCHCField):
         str :
             Bit representation
         """
-        return "{:0b}".format(self.w).zfill(self.m)
+        return self.zfill("{:0b}".format(self.w), self.m)
 
-    def format_text(self) -> Tuple[str, str, str]:
+    def format_text(self):
         """
         Gets format text to write message as text
 
@@ -67,5 +66,5 @@ class WField(SCHCField):
         else:
             return super().format_text()
 
-    def __eq__(self, other: int) -> bool:
+    def __eq__(self, other):
         return other == self.w

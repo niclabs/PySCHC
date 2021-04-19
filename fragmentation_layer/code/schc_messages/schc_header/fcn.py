@@ -1,8 +1,6 @@
 """fcn: Fragment Compressed Number Class"""
 
 from math import log
-from typing import Tuple
-
 from schc_messages.schc_header import SCHCField
 
 
@@ -18,7 +16,7 @@ class FragmentedCompressedNumber(SCHCField):
         Size of FCN in bits (given according to rule_id)
     """
 
-    def __init__(self, fcn: int, n: int) -> None:
+    def __init__(self, fcn, n):
         """
         W constructor
 
@@ -37,7 +35,7 @@ class FragmentedCompressedNumber(SCHCField):
         self.size = self.n
         return
 
-    def as_bits(self) -> str:
+    def as_bits(self):
         """
         Returns the bits representation of the SCHC Header
 
@@ -47,11 +45,11 @@ class FragmentedCompressedNumber(SCHCField):
             Bit representation
         """
         if self.n != 0:
-            return "{:0b}".format(self.fcn).zfill(self.n)
+            return self.zfill("{:0b}".format(self.fcn), self.n)
         else:
             return ""
 
-    def format_text(self) -> Tuple[str, str, str]:
+    def format_text(self):
         """
         Gets format text to write message as text
 

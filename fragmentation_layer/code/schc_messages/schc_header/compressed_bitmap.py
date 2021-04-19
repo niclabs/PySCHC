@@ -1,6 +1,5 @@
 """compressed_bitmap: Compressed Bitmap Class"""
 
-from typing import List, Tuple
 from schc_messages.schc_header import SCHCField
 
 
@@ -16,7 +15,7 @@ class CompressedBitmap(SCHCField):
         WINDOW SIZE given on initialization
     """
 
-    def __init__(self, bitmap: List[bool], window_size: int) -> None:
+    def __init__(self, bitmap, window_size):
         """
         Compressed Bitmap constructor
 
@@ -34,7 +33,7 @@ class CompressedBitmap(SCHCField):
         self.size = len(bitmap)
         return
 
-    def as_bits(self) -> str:
+    def as_bits(self):
         """
         Returns the bytes representation of the SCHC Header
 
@@ -51,7 +50,7 @@ class CompressedBitmap(SCHCField):
                 out += "0"
         return out
 
-    def format_text(self) -> Tuple[str, str, str]:
+    def format_text(self):
         """
         Gets format text to write message as text
 

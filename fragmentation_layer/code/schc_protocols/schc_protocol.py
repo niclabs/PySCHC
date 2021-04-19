@@ -1,10 +1,9 @@
 """ schc_protocol: Class with SCHC Protocols"""
 
-from abc import ABC, abstractmethod
 from schc_base import SCHCObject
 
 
-class SCHCProtocol(ABC):
+class SCHCProtocol:
     """
     SCHC Protocol specified
 
@@ -33,7 +32,7 @@ class SCHCProtocol(ABC):
     LoRaWAN = 1
     Sigfox = 2
 
-    def __init__(self, __name__: str, rule_id: int = 0) -> None:
+    def __init__(self, __name__, rule_id=0):
         """
         Constructor
 
@@ -60,8 +59,7 @@ class SCHCProtocol(ABC):
         self.RETRANSMISSION_TIMER = 0
         return
 
-    @abstractmethod
-    def set_rule_id(self, rule_id: int) -> None:
+    def set_rule_id(self, rule_id):
         """
         Sets Rule ID changing parameters
 
@@ -78,8 +76,7 @@ class SCHCProtocol(ABC):
         self.RULE_ID = rule_id
         return
 
-    @abstractmethod
-    def payload_condition_all1(self, payload: str) -> str:
+    def payload_condition_all1(self, payload):
         """
         Payload on All1 SCHC Fragment is specified in each profile,
         furthermore, this method most be implemented to delete payload
@@ -98,8 +95,7 @@ class SCHCProtocol(ABC):
         """
         return ""
 
-    @abstractmethod
-    def calculate_rcs(self, packet: str) -> str:
+    def calculate_rcs(self, packet):
         """
         Calculates RCS according to protocol specification
 
@@ -116,8 +112,7 @@ class SCHCProtocol(ABC):
         from binascii import crc32
         return hex(crc32(SCHCObject.bits_2_bytes(packet)))
 
-    @abstractmethod
-    def penultimate_tile(self) -> int:
+    def penultimate_tile(self):
         """
         Penultimate tile condition in case Ack-On-Error is used
 

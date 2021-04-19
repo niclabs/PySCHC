@@ -1,5 +1,4 @@
 """integrity_check: Integrity Check Class"""
-from typing import Tuple
 
 from schc_messages.schc_header import SCHCField
 
@@ -14,7 +13,7 @@ class IntegrityCheck(SCHCField):
         C value as a boolean value
     """
 
-    def __init__(self, c: bool) -> None:
+    def __init__(self, c):
         """
         W constructor
 
@@ -27,7 +26,7 @@ class IntegrityCheck(SCHCField):
         self.c = c
         self.size = 1
 
-    def as_bits(self) -> str:
+    def as_bits(self):
         """
         Returns the bits representation of the SCHC Header
 
@@ -38,7 +37,7 @@ class IntegrityCheck(SCHCField):
         """
         return "{:0b}".format(self.c)
 
-    def format_text(self) -> Tuple[str, str, str]:
+    def format_text(self):
         """
         Gets format text to write message as text
 

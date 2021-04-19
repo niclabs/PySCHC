@@ -1,5 +1,4 @@
 """schc_padding: SCHC Padding Class"""
-from typing import Tuple
 
 from schc_base import SCHCObject
 
@@ -9,10 +8,10 @@ class SCHCPadding(SCHCObject):
     SCHC Padding Class
     """
 
-    def __init__(self) -> None:
+    def __init__(self):
         super().__init__()
 
-    def add(self, size: int) -> int:
+    def add(self, size):
         """
         Add bits to padding
 
@@ -29,7 +28,7 @@ class SCHCPadding(SCHCObject):
         self.size += size
         return self.size
 
-    def as_bits(self) -> str:
+    def as_bits(self):
         """
         Bit by bit representation
 
@@ -40,7 +39,7 @@ class SCHCPadding(SCHCObject):
         """
         return '0' * self.size
 
-    def as_bytes(self) -> bytes:
+    def as_bytes(self):
         """
         Not to be used
 

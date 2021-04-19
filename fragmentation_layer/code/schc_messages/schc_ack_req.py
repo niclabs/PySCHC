@@ -15,8 +15,7 @@ class SCHCAckReq(SCHCMessage):
     +--------+------+---+-------+--------------------+
     """
 
-    def __init__(self, rule_id: int, protocol: int = 1,
-                 dtag: int = None, w: int = None) -> None:
+    def __init__(self, rule_id, protocol=1, dtag=None, w=None):
         super().__init__(rule_id=rule_id, protocol=protocol,
                          dtag=dtag, w=w)
         self.header.fcn = FragmentedCompressedNumber(0, self.protocol.N)
@@ -24,7 +23,7 @@ class SCHCAckReq(SCHCMessage):
         self.size += self.header.fcn.size
         return
 
-    def as_bits(self) -> str:
+    def as_bits(self):
         """
         Bits sequence representation
 
@@ -35,7 +34,7 @@ class SCHCAckReq(SCHCMessage):
         """
         return self.header.as_bits() + self.padding.as_bits()
 
-    def as_text(self) -> str:
+    def as_text(self):
         """
         Writes ACK REQ message with specifications
 
@@ -48,7 +47,7 @@ class SCHCAckReq(SCHCMessage):
         return self.base_as_text(header_text)
 
     @staticmethod
-    def from_bytes(received: bytes, protocol: int = 1) -> SCHCMessage:
+    def from_bytes(received, protocol=1):
         """
         Generates a SCHCAckReq instance from bytes
 

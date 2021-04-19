@@ -1,5 +1,4 @@
 """dtag: Datagram Tag Class"""
-from typing import Tuple
 
 from schc_messages.schc_header import SCHCField
 
@@ -16,7 +15,7 @@ class DTag(SCHCField):
         Size of Dtag in bits (given according to rule_id)
     """
 
-    def __init__(self, dtag: int, t: int) -> None:
+    def __init__(self, dtag, t):
         """
         DTag constructor
 
@@ -33,7 +32,7 @@ class DTag(SCHCField):
         self.size = self.t
         return
 
-    def as_bits(self) -> str:
+    def as_bits(self):
         """
         Returns the bits representation of the SCHC Header
 
@@ -45,9 +44,9 @@ class DTag(SCHCField):
         if self.t == 0:
             return ""
         else:
-            return "{:0b}".format(self.dtag).zfill(self.t)
+            return self.zfill("{:0b}".format(self.dtag), self.t)
 
-    def format_text(self) -> Tuple[str, str, str]:
+    def format_text(self):
         """
         Gets format text to write message as text
 

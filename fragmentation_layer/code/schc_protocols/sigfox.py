@@ -1,14 +1,13 @@
 """ sigfox: Sigfox implementation Protocol """
 
 from schc_protocols import SCHCProtocol
-from warnings import warn
 
 
 class Sigfox(SCHCProtocol):
     """
     Sigfox Protocol Class
     """
-    def __init__(self, rule_id: int = 0) -> None:
+    def __init__(self, rule_id=0):
         """
         Constructor
 
@@ -18,11 +17,10 @@ class Sigfox(SCHCProtocol):
             Specified Rule ID in case Profile is different
         """
         super().__init__("Sigfox", rule_id)
-        warn("Sigfox is added for testing and completeness, but it is not implemented yet",
-             ImportWarning)
         self.id = 2  # Numeral key of Sigfox
+        raise NotImplementedError("Sigfox is added for testing and completeness, but it is not implemented yet")
 
-    def set_rule_id(self, rule_id: int) -> None:
+    def set_rule_id(self, rule_id):
         """
         Sets Rule ID
 
@@ -45,7 +43,7 @@ class Sigfox(SCHCProtocol):
         super().set_rule_id(rule_id)
         return
 
-    def payload_condition_all1(self, payload: str) -> str:
+    def payload_condition_all1(self, payload):
         """
         Pending...
 
@@ -61,7 +59,7 @@ class Sigfox(SCHCProtocol):
         """
         return ""
 
-    def calculate_rcs(self, packet: str) -> str:
+    def calculate_rcs(self, packet):
         """
         Pending
 
@@ -77,7 +75,7 @@ class Sigfox(SCHCProtocol):
         """
         return ""
 
-    def penultimate_tile(self) -> int:
+    def penultimate_tile(self):
         """
         Pending...
 

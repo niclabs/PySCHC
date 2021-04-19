@@ -5,7 +5,7 @@ from schc_protocols.lorawan import LoRaWAN
 from schc_protocols.sigfox import Sigfox
 
 
-def get_protocol(protocol: int, rule_id: int = 0) -> SCHCProtocol:
+def get_protocol(protocol, rule_id=0):
     """
     Generates protocol from id defined
 

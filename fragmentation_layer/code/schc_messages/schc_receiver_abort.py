@@ -20,8 +20,7 @@ class SCHCReceiverAbort(SCHCMessage):
         Ones to add
     """
 
-    def __init__(self, rule_id: int, protocol: int = 1,
-                 dtag: int = None, w: int = None) -> None:
+    def __init__(self, rule_id, protocol=1, dtag=None, w=None):
         super().__init__(rule_id=rule_id, protocol=protocol,
                          dtag=dtag, w=w)
         if self.header.w.size != 0:
@@ -33,7 +32,7 @@ class SCHCReceiverAbort(SCHCMessage):
         self.__fill_ones__()
         return
 
-    def as_bits(self) -> str:
+    def as_bits(self):
         """
         Bits sequence representation
 
@@ -44,7 +43,7 @@ class SCHCReceiverAbort(SCHCMessage):
         """
         return self.header.as_bits() + ("1" * self.ones)
 
-    def add_padding(self) -> int:
+    def add_padding(self):
         """
         Do nothing, method not allowed
 
@@ -63,7 +62,7 @@ class SCHCReceiverAbort(SCHCMessage):
              RuntimeWarning)
         return 0
 
-    def as_text(self) -> str:
+    def as_text(self):
         """
         Writes Sender Abort message with specifications
 
@@ -82,7 +81,7 @@ class SCHCReceiverAbort(SCHCMessage):
             ones = self.ones * "1"
         return text + ones + "|"
 
-    def __fill_ones__(self) -> None:
+    def __fill_ones__(self):
         """
         Fills one according to RFC8724
 
@@ -103,7 +102,7 @@ class SCHCReceiverAbort(SCHCMessage):
         return
 
     @staticmethod
-    def from_bytes(received: bytes, protocol: int = 1) -> SCHCMessage:
+    def from_bytes(received, protocol=1):
         """
         Generates a SCHC Receiver Abort instance from bytes
 
