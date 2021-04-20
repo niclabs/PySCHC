@@ -4,7 +4,7 @@ from schc_messages import SCHCMessage, SCHCAck, SCHCAckReq, SCHCReceiverAbort, A
 from schc_protocols import LoRaWAN
 
 
-def parse(message: bytes) -> SCHCMessage:
+def parse(message):
     """
     Parses message receive according to LoRaWAN Profile
 
@@ -36,7 +36,7 @@ def parse(message: bytes) -> SCHCMessage:
         raise ValueError("Rule ID not defined in protocol")
 
 
-def __parse_uplink__(message: bytes) -> SCHCMessage:
+def __parse_uplink__(message):
     """
     Parses message on uplink mode
 
@@ -85,7 +85,7 @@ def __parse_uplink__(message: bytes) -> SCHCMessage:
         raise ValueError("Message of unknown type for LoRaWAN SCHC Compression")
 
 
-def __parse_downlink__(message: bytes) -> SCHCMessage:
+def __parse_downlink__(message):
     """
     Parses message on downlink mode
 

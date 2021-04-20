@@ -1,7 +1,6 @@
 """ Timer: Equivalent to Timer class (PyCom) """
 
 import threading
-from typing import Callable, Tuple
 
 
 class Timer:
@@ -16,9 +15,25 @@ class Timer:
         Used to get interrupted after a specific interval (PyCom)
         """
 
-        def __init__(self, handler: Callable, s: float = None,
-                     *, ms: int = None, us: int = None, arg: Tuple[object, ...] = None,
-                     periodic: bool = False) -> None:
+        def __init__(self, handler, s=None, *, ms=None, us=None, arg=None, periodic=False):
+            """
+            Constructor
+
+            Parameters
+            ----------
+            handler : Callable
+                Handler of alarm funcion
+            s : float, optional
+                Seconds, if ms and us are not specified this parameter is not optional
+            ms : float, optional
+                Milliseconds, if s and us are not specified this parameter is not optional
+            us : float, optional
+                Microseconds, if s and ms are not specified this parameter is not optional
+            arg : Tuple[object, ...], optional
+                Args of handler function
+            periodic : bool, optional
+                Whether the alarm is periodic (start counting again when limit time is reach)
+            """
             if s is None and ms is None and us is None:
                 raise TypeError("__init__() missing 1 required keyword only argument: 's', 'ms' or 'us'")
             self.__timer__ = None
@@ -50,7 +65,7 @@ class Timer:
                 self.__set_alarm__()
             return
 
-        def callback(self, handler: Callable, arg: Tuple[object, ...] = None) -> None:
+        def callback(self, handler, arg=None):
             """
             Specify a callback handler for the alarm.
 
@@ -71,7 +86,7 @@ class Timer:
             self.__set_alarm__()
             return
 
-        def cancel(self) -> None:
+        def cancel(self):
             """
             Disables the alarm.
 

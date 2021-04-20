@@ -1,5 +1,4 @@
 """schc_payload: SCHC Payload Class"""
-from typing import Tuple, Union
 
 from schc_base import SCHCObject
 
@@ -14,11 +13,11 @@ class SCHCPayload(SCHCObject):
         Content of payload
     """
 
-    def __init__(self) -> None:
+    def __init__(self):
         super().__init__()
         self.content = ''
 
-    def as_bits(self) -> str:
+    def as_bits(self):
         """
         Represent the SCHCObject content in a string
         representing bit by bit
@@ -30,7 +29,7 @@ class SCHCPayload(SCHCObject):
         """
         return self.content
 
-    def as_bytes(self) -> bytes:
+    def as_bytes(self):
         """
         Represent payload as bytes
 
@@ -41,7 +40,7 @@ class SCHCPayload(SCHCObject):
         """
         return SCHCObject.bits_2_bytes(self.content)
 
-    def add_content(self, to_add: Union[str, bytes]) -> int:
+    def add_content(self, to_add):
         """
         Add content to payload
 

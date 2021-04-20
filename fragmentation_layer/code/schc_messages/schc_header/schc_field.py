@@ -1,19 +1,16 @@
 """ schc_field: SCHC Field Abstract Class"""
 
-from abc import ABC, abstractmethod
-from typing import Tuple
-
 from schc_base import SCHCObject
 
 
-class SCHCField(SCHCObject, ABC):
+class SCHCField(SCHCObject):
     """
     SCHC Field Class
     """
     def __init__(self):
         super().__init__()
 
-    def as_bytes(self) -> bytes:
+    def as_bytes(self):
         """
         Not to be used
 
@@ -24,8 +21,7 @@ class SCHCField(SCHCObject, ABC):
         """
         return b''
 
-    @abstractmethod
-    def as_bits(self) -> str:
+    def as_bits(self):
         """
         Represent the field as bits, depending on field
 
@@ -36,7 +32,7 @@ class SCHCField(SCHCObject, ABC):
         """
         pass
 
-    def format_text(self) -> Tuple[str, str, str]:
+    def format_text(self):
         """
         Gets format text for header, name and content
 

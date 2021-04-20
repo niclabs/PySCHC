@@ -1,5 +1,4 @@
 """rcs: Reassembly Check Sequence Class"""
-from typing import Tuple
 
 from schc_messages.schc_header import SCHCField
 
@@ -16,7 +15,7 @@ class ReassemblyCheckSequence(SCHCField):
         Size of RCS in bits (given according to rule_id)
     """
 
-    def __init__(self, rcs: str, u: int) -> None:
+    def __init__(self, rcs, u):
         """
         RCS constructor
 
@@ -33,7 +32,7 @@ class ReassemblyCheckSequence(SCHCField):
         self.size = self.u
         return
 
-    def as_bits(self) -> str:
+    def as_bits(self):
         """
         Returns the bits representation of the SCHC Header
 
@@ -43,9 +42,9 @@ class ReassemblyCheckSequence(SCHCField):
             Bit representation
         """
         rcs = int(self.rcs, 0)
-        return "{:0b}".format(rcs).zfill(self.u)
+        return self.zfill("{:0b}".format(rcs), self.u)
 
-    def format_text(self) -> Tuple[str, str, str]:
+    def format_text(self):
         """
         Gets format text to write message as text
 

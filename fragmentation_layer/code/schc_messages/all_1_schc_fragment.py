@@ -16,8 +16,7 @@ class All1SCHCFragment(SCHCFragment):
     +--------+------+---+-----+-----+------------------+--------------------+
     """
 
-    def __init__(self, rule_id: int, protocol: int = 1, dtag: int = None,
-                 w: int = None, rcs: str = None) -> None:
+    def __init__(self, rule_id, protocol=1, dtag=None, w=None, rcs=None):
         """
         Constructor
 
@@ -41,7 +40,7 @@ class All1SCHCFragment(SCHCFragment):
         return
 
     @staticmethod
-    def from_bytes(received: bytes, protocol: int = 1) -> SCHCMessage:
+    def from_bytes(received, protocol=1):
         """
         Generate a RegularSCHCFragment instance from bytes
 

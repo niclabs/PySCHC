@@ -11,7 +11,7 @@ class LoRaWAN(SCHCProtocol):
     DOWNLINK = 21
     NOT_POSSIBLE = 22
 
-    def __init__(self, rule_id: int = 0) -> None:
+    def __init__(self, rule_id=0):
         """
         Constructor
 
@@ -34,7 +34,7 @@ class LoRaWAN(SCHCProtocol):
         self.L2_WORD = 8  # in bits
         self.__set_parameters__()
 
-    def set_rule_id(self, rule_id: int) -> None:
+    def set_rule_id(self, rule_id):
         """
         Sets Rule ID
 
@@ -58,7 +58,7 @@ class LoRaWAN(SCHCProtocol):
         self.__set_parameters__()
         return
 
-    def __set_parameters__(self) -> None:
+    def __set_parameters__(self):
         if self.RULE_ID == 0:
             pass  # To get basic parameters
         elif self.RULE_ID == LoRaWAN.UPLINK:  # Uplink
@@ -87,7 +87,7 @@ class LoRaWAN(SCHCProtocol):
             raise ValueError("Rule ID not defined in protocol")
         return
 
-    def payload_condition_all1(self, payload: str) -> str:
+    def payload_condition_all1(self, payload):
         """
         Just one tile is allowed
 
@@ -107,7 +107,7 @@ class LoRaWAN(SCHCProtocol):
             elif self.RULE_ID == LoRaWAN.DOWNLINK:
                 return payload
 
-    def calculate_rcs(self, packet: str) -> str:
+    def calculate_rcs(self, packet):
         """
         Calculates RCS according to protocol specification
 
@@ -123,7 +123,7 @@ class LoRaWAN(SCHCProtocol):
         """
         return super().calculate_rcs(packet)
 
-    def penultimate_tile(self) -> int:
+    def penultimate_tile(self):
         """
         Same as regular tiles
 

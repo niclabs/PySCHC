@@ -1,6 +1,5 @@
 """schc_ack: SCHCAck Class"""
 
-from typing import List
 from schc_messages import SCHCMessage
 
 
@@ -15,8 +14,7 @@ class SCHCAck(SCHCMessage):
     +--------+------+---+-----+-----------------+--------------------+
     """
 
-    def __init__(self, rule_id: int, protocol: int, c: bool, dtag: int = None,
-                 w: int = None, compressed_bitmap: List[bool] = None) -> None:
+    def __init__(self, rule_id, protocol, c, dtag=None, w=None, compressed_bitmap=None):
         """
         Constructor
 
@@ -34,7 +32,7 @@ class SCHCAck(SCHCMessage):
         super().__init__(rule_id=rule_id, protocol=protocol, dtag=dtag,
                          w=w, c=c, compressed_bitmap=compressed_bitmap)
 
-    def as_bits(self) -> str:
+    def as_bits(self):
         """
         Bits sequence representation
 
@@ -45,7 +43,7 @@ class SCHCAck(SCHCMessage):
         """
         return self.header.as_bits() + self.padding.as_bits()
 
-    def as_text(self) -> str:
+    def as_text(self):
         """
         Writes ACK message with specifications
 
@@ -58,7 +56,7 @@ class SCHCAck(SCHCMessage):
         return self.base_as_text(header_text)
 
     @staticmethod
-    def from_bytes(received: bytes, protocol: int = 1) -> SCHCMessage:
+    def from_bytes(received, protocol=1):
         """
         Generates a SCHCAck instance from bytes
 

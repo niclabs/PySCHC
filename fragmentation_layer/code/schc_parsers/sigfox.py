@@ -1,9 +1,7 @@
 """ sigfox: Sigfox parser function """
 
-from schc_messages import SCHCMessage, SCHCAck
 
-
-def parse(message: bytes) -> SCHCMessage:
+def parse(message):
     """
     Parses message receive according to Sigfox Profile
 

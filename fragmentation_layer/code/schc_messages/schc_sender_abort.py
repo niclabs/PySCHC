@@ -15,8 +15,7 @@ class SCHCSenderAbort(SCHCMessage):
     +--------+------+---+--------+--------------------+
     """
 
-    def __init__(self, rule_id: int, protocol: int = 1,
-                 dtag: int = None, w: int = None) -> None:
+    def __init__(self, rule_id, protocol=1, dtag=None, w=None):
         super().__init__(rule_id=rule_id, protocol=protocol,
                          dtag=dtag, w=w)
         self.header.fcn = FragmentedCompressedNumber(int(2**self.protocol.N) - 1,
@@ -27,7 +26,7 @@ class SCHCSenderAbort(SCHCMessage):
             self.header.w.w = int(2**self.header.w.size) - 1
         return
 
-    def as_bits(self) -> str:
+    def as_bits(self):
         """
         Bits sequence representation
 
@@ -38,7 +37,7 @@ class SCHCSenderAbort(SCHCMessage):
         """
         return self.header.as_bits() + self.padding.as_bits()
 
-    def as_text(self) -> str:
+    def as_text(self):
         """
         Writes Sender Abort message with specifications
 
@@ -51,7 +50,7 @@ class SCHCSenderAbort(SCHCMessage):
         return self.base_as_text(header_text)
 
     @staticmethod
-    def from_bytes(received: bytes, protocol: int = 1) -> SCHCMessage:
+    def from_bytes(received, protocol=1):
         """
         Generates a SCHC Sender Abort instance from bytes
 

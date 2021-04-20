@@ -32,7 +32,7 @@ class SCHCHeader(SCHCObject):
     size
     """
 
-    def __init__(self, rule_id: int, protocol: int = 1, **kwargs) -> None:
+    def __init__(self, rule_id, protocol, **kwargs):
         """
         SCHC Header constructor
 
@@ -86,7 +86,7 @@ class SCHCHeader(SCHCObject):
             self.compressed_bitmap.size
         ])
 
-    def as_bits(self) -> str:
+    def as_bits(self):
         """
         Representation of bits sequence
 
@@ -105,7 +105,7 @@ class SCHCHeader(SCHCObject):
             self.compressed_bitmap.as_bits(),
         ])
 
-    def as_bytes(self) -> bytes:
+    def as_bytes(self):
         """
         Representation as bytes (probably not to be used)
 

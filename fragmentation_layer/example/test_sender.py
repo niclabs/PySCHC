@@ -2,7 +2,8 @@
 
 import logging
 import socket
-from common_methods import messaging_loop, HOST, get_mtu, send_socket, receive_socket
+
+from common_methods import messaging_loop, HOST
 
 RECEIVER_PORT = 50007
 SENDER_PORT = 50006

@@ -1,15 +1,12 @@
 """ schc_receiver: SCHC Finite State Machine Receiver Behaviour """
 
-from __future__ import annotations
-from abc import ABC
 from schc_base import SCHCTimer
-from schc_messages import RegularSCHCFragment, All1SCHCFragment, SCHCAckReq, SCHCSenderAbort, SCHCMessage, SCHCPayload
 from schc_machines import SCHCFiniteStateMachine
+from schc_messages import RegularSCHCFragment, All1SCHCFragment, SCHCAckReq, SCHCSenderAbort, SCHCPayload
 from schc_parsers import SCHCParser
-from schc_protocols import SCHCProtocol
 
 
-class SCHCReceiver(SCHCFiniteStateMachine, ABC):
+class SCHCReceiver(SCHCFiniteStateMachine):
     """
     SCHC Finite State Machine for Receiver behaviour
 
@@ -23,11 +20,14 @@ class SCHCReceiver(SCHCFiniteStateMachine, ABC):
     """
     __type__ = "Receiver"
 
-    class ReceiverState(SCHCFiniteStateMachine.State, ABC):
+    class ReceiverState(SCHCFiniteStateMachine.State):
         """
         Receiver State
         """
-        def receive_message(self, message: bytes) -> None:
+        def __init__(self, state_machine):
+            super().__init__(state_machine)
+
+        def receive_message(self, message):
             """
             Receives a message and does something
 
@@ -45,7 +45,7 @@ class SCHCReceiver(SCHCFiniteStateMachine, ABC):
             ValueError
                 In case bytes received could not be decoded to a SCHC Message
             """
-            schc_message = SCHCParser.from_bytes(self.state_machine.protocol, message)
+            schc_message = SCHCParser.from_bytes(self.sm.protocol, message)
             if isinstance(schc_message, RegularSCHCFragment):
                 return self.receive_regular_schc_fragment(schc_message)
             elif isinstance(schc_message, All1SCHCFragment):
@@ -57,7 +57,7 @@ class SCHCReceiver(SCHCFiniteStateMachine, ABC):
             else:
                 raise ValueError("Bytes received could not be decoded")
 
-        def receive_regular_schc_fragment(self, schc_message: RegularSCHCFragment) -> None:
+        def receive_regular_schc_fragment(self, schc_message):
             """
             Does something when SCHC Message
 
@@ -78,7 +78,7 @@ class SCHCReceiver(SCHCFiniteStateMachine, ABC):
             """
             raise RuntimeError("Behaviour unreachable")
 
-        def receive_all1_schc_fragment(self, schc_message: All1SCHCFragment) -> None:
+        def receive_all1_schc_fragment(self, schc_message):
             """
             Does something when SCHC Message
 
@@ -98,7 +98,7 @@ class SCHCReceiver(SCHCFiniteStateMachine, ABC):
             """
             raise RuntimeError("Behaviour unreachable")
 
-        def receive_schc_ack_req(self, schc_message: SCHCAckReq) -> None:
+        def receive_schc_ack_req(self, schc_message):
             """
             Does something when SCHC Message
 
@@ -118,7 +118,7 @@ class SCHCReceiver(SCHCFiniteStateMachine, ABC):
             """
             raise RuntimeError("Behaviour unreachable")
 
-        def receive_schc_sender_abort(self, schc_message: SCHCSenderAbort) -> None:
+        def receive_schc_sender_abort(self, schc_message):
             """
             Does something when SCHC Message
 
@@ -130,15 +130,12 @@ class SCHCReceiver(SCHCFiniteStateMachine, ABC):
             Returns
             -------
             None, alter state
-
-            Raises
-            ------
-            RuntimeError
-                Behaviour unreachable
             """
-            raise RuntimeError("Behaviour unreachable")
+            self.sm.state = self.sm.states["error"]
+            self.sm.state.enter_state()
+            return
 
-    def __init__(self, protocol: SCHCProtocol, dtag: int = None) -> None:
+    def __init__(self, protocol, dtag=None):
         super().__init__(protocol, dtag=dtag)
         self.payload: SCHCPayload = SCHCPayload()
         self.inactivity_timer = SCHCTimer(self.on_expiration_time, protocol.INACTIVITY_TIMER)
