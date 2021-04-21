@@ -45,6 +45,9 @@ class SCHCFragmenterGateway:
             elif rule_id == LoRaWAN.DOWNLINK:
                 from schc_machines.lorawan import DownlinkReceiver
                 self.assign_session(rule_id, dtag, DownlinkReceiver(LoRaWAN(LoRaWAN.UPLINK)))
+            else:
+                pass
+                # TODO compression
         else:
             raise NotImplementedError("Just LoRaWAN implemented")
 

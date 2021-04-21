@@ -64,7 +64,7 @@ socket_rx.listen(1)
 if __name__ == '__main__':
     logging.basicConfig(level=logging.DEBUG)
 
-    from schc_machines.lorawan import UplinkSender
+    from schc_machines.lorawan import DownlinkSender
     from schc_protocols import LoRaWAN
 
     sender = UplinkSender(
