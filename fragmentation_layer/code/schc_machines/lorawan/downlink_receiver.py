@@ -1,6 +1,5 @@
 """ downlink_receiver: Downlink receiver state machine """
 
-from __future__ import annotations
 from typing import List
 from schc_machines import SCHCReceiver, AckAlways
 from schc_messages import SCHCMessage, RegularSCHCFragment, SCHCAck, All1SCHCFragment
@@ -22,7 +21,7 @@ class DownlinkReceiver(AckAlways, SCHCReceiver):
         """
         __name__ = "Receiving phase"
 
-        def generate_message(self, mtu: int) -> SCHCMessage:
+        def generate_message(self, mtu):
             """
             Send messages saved on message_to_send variable
 
@@ -49,7 +48,7 @@ class DownlinkReceiver(AckAlways, SCHCReceiver):
                 return message
             raise GeneratorExit("No message to send, keep receiving")
 
-        def receive_regular_schc_fragment(self, schc_message: RegularSCHCFragment) -> None:
+        def receive_regular_schc_fragment(self, schc_message):
             """
             Actions when receive a Regular SCHC Fragment
 
@@ -82,7 +81,7 @@ class DownlinkReceiver(AckAlways, SCHCReceiver):
                 self._logger_.debug("Different window received")
             return
 
-        def receive_all1_schc_fragment(self, schc_message: All1SCHCFragment) -> None:
+        def receive_all1_schc_fragment(self, schc_message):
             """
             Behaviour of when receiving All-1 SCHC Fragment
 
@@ -131,7 +130,7 @@ class DownlinkReceiver(AckAlways, SCHCReceiver):
                 self._logger_.debug("Different window received")
                 return
 
-        def receive_schc_ack_req(self, schc_message: SCHCAckReq) -> None:
+        def receive_schc_ack_req(self, schc_message):
             """
             Actions when receive a SCHC Ack Request
 
@@ -149,7 +148,7 @@ class DownlinkReceiver(AckAlways, SCHCReceiver):
             # else
             #   return silently
 
-        def receive_schc_sender_abort(self, schc_message: SCHCSenderAbort) -> None:
+        def receive_schc_sender_abort(self, schc_message):
             """
             Actions when receive a SCHC Sender Abort
 
@@ -170,7 +169,7 @@ class DownlinkReceiver(AckAlways, SCHCReceiver):
         """
         __name__ = "Waiting phase"
 
-        def generate_message(self, mtu: int) -> SCHCMessage:
+        def generate_message(self, mtu):
             """
             Send an SCHCAcK
             Parameters
@@ -197,7 +196,7 @@ class DownlinkReceiver(AckAlways, SCHCReceiver):
             else:
                 raise GeneratorExit("No message to send, keep receiving")
 
-        def receive_regular_schc_fragment(self, schc_message: RegularSCHCFragment) -> None:
+        def receive_regular_schc_fragment(self, schc_message):
             """
             Receiving a regular SCHC Fragment to start new window
 
@@ -223,7 +222,7 @@ class DownlinkReceiver(AckAlways, SCHCReceiver):
                 pass
             return
 
-        def receive_all1_schc_fragment(self, schc_message: All1SCHCFragment) -> None:
+        def receive_all1_schc_fragment(self, schc_message):
             """
             Actions when receive a All-1 SCHC Fragment
 
@@ -248,9 +247,10 @@ class DownlinkReceiver(AckAlways, SCHCReceiver):
             else:
                 # if not last_window: pass
                 # else: TODO
+                pass
             return
 
-        def receive_schc_ack_req(self, schc_message: SCHCAckReq) -> None:
+        def receive_schc_ack_req(self, schc_message):
             """
             Actions when receive a SCHC Ack Request
 
@@ -274,7 +274,7 @@ class DownlinkReceiver(AckAlways, SCHCReceiver):
             
             return
 
-        def receive_schc_sender_abort(self, schc_message: SCHCSenderAbort) -> None:
+        def receive_schc_sender_abort(self, schc_message):
             """
             Actions when receive a SCHC Sender Abort
 
@@ -295,7 +295,7 @@ class DownlinkReceiver(AckAlways, SCHCReceiver):
         """
         __name__ = "Cleanup phase"
 
-        def generate_message(self, mtu: int) -> SCHCMessage:
+        def generate_message(self, mtu):
             """
             Generates SCHC Message when this method is
             called. Make sure size (access with method schc_message.size),
@@ -303,7 +303,7 @@ class DownlinkReceiver(AckAlways, SCHCReceiver):
             """
             pass
 
-        def receive_regular_schc_fragment(self, schc_message: RegularSCHCFragment) -> None:
+        def receive_regular_schc_fragment(self, schc_message):
             """
             Actions when receive a Regular SCHC Fragment
 
@@ -318,7 +318,7 @@ class DownlinkReceiver(AckAlways, SCHCReceiver):
             """
             return
 
-        def receive_all1_schc_fragment(self, schc_message: All1SCHCFragment) -> None:
+        def receive_all1_schc_fragment(self, schc_message):
             """
             Actions when receive a All-1 SCHC Fragment
 
@@ -333,7 +333,7 @@ class DownlinkReceiver(AckAlways, SCHCReceiver):
             """
             return
 
-        def receive_schc_ack_req(self, schc_message: SCHCAckReq) -> None:
+        def receive_schc_ack_req(self, schc_message):
             """
             Actions when receive a SCHC Ack Request
 
@@ -348,7 +348,7 @@ class DownlinkReceiver(AckAlways, SCHCReceiver):
             """
             return
 
-        def receive_schc_sender_abort(self, schc_message: SCHCSenderAbort) -> None:
+        def receive_schc_sender_abort(self, schc_message):
             """
             Actions when receive a SCHC Sender Abort
 
@@ -363,7 +363,7 @@ class DownlinkReceiver(AckAlways, SCHCReceiver):
             """
             return
 
-    def __init__(self, protocol: SCHCProtocol, dtag: int = None) -> None:
+    def __init__(self, protocol, dtag = None):
         super().__init__(protocol, dtag=dtag)
         AckAlways.__init__(self)
         self.states["name_your_state"] = DowblinkReceiver.TemplatePhase(self)

@@ -1,6 +1,5 @@
 """ downlink_sender: Downlink sender state machine """
 
-from __future__ import annotations
 from schc_machines import SCHCSender, AckAlways
 from schc_messages import SCHCMessage, SCHCAck, SCHCReceiverAbort
 from schc_protocols import SCHCProtocol
@@ -22,7 +21,7 @@ class DownlinkSender(AckAlways, SCHCSender):
         """
         __name__ = "Sending Phase"
 
-        def generate_message(self, mtu: int) -> SCHCMessage:
+        def generate_message(self, mtu):
             """
             TODO Doc
             """
@@ -67,7 +66,7 @@ class DownlinkSender(AckAlways, SCHCSender):
         """
         __name__ = "Waiting Phase"
 
-        def generate_message(self, mtu: int) -> SCHCMessage:
+        def generate_message(self, mtu):
             """
             TODO Doc
             """
@@ -111,7 +110,7 @@ class DownlinkSender(AckAlways, SCHCSender):
                     # change_state("Retransmiting")
                     return
 
-        def receive_schc_receiver_abort(self, schc_message: SCHCReceiverAbort) -> None:
+        def receive_schc_receiver_abort(self, schc_message):
             """
             Actions when receive a SCHC Receiver Abort Message
 
@@ -134,7 +133,7 @@ class DownlinkSender(AckAlways, SCHCSender):
         """
         __name__ = "Retransmiting phase"
 
-        def generate_message(self, mtu: int) -> SCHCMessage:
+        def generate_message(self, mtu):
             """
             Generates SCHC Message when this method is
             called. Make sure size (access with method schc_message.size),
@@ -142,8 +141,7 @@ class DownlinkSender(AckAlways, SCHCSender):
             """
             pass
 
-    def __init__(self, protocol: SCHCProtocol, payload: bytes,
-                 residue: str = "", dtag: int = None) -> None:
+    def __init__(self, protocol, payload, residue = "", dtag = None):
         super().__init__(protocol, payload, residue=residue, dtag=dtag)
         AckAlways.__init__(self)
         self.states["name_your_phase"] = DownlinkSender.TemplatePhase(self)
