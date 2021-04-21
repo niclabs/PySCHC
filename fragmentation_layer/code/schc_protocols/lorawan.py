@@ -61,7 +61,7 @@ class LoRaWAN(SCHCProtocol):
     def __set_parameters__(self):
         if self.RULE_ID == 0:
             pass  # To get basic parameters
-        elif self.RULE_ID == LoRaWAN.UPLINK:  # Uplink
+        elif self.RULE_ID == LoRaWAN.UPLINK:  # AckOnError
             self.T = 0  # in bits
             self.M = 2  # in bits
             self.N = 6  # in bits
@@ -130,7 +130,7 @@ class LoRaWAN(SCHCProtocol):
         Returns
         -------
         int :
-            Same as tile size on uplink (none on downlink)
+            Same as tile size on ack_on_error (none on downlink)
         """
         if self.RULE_ID == LoRaWAN.UPLINK:
             return self.TILE_SIZE

@@ -64,10 +64,10 @@ socket_rx.listen(1)
 if __name__ == '__main__':
     logging.basicConfig(level=logging.DEBUG)
 
-    from schc_machines.lorawan import UplinkSender
+    from schc_machines.lorawan import AckOnErrorSender
     from schc_protocols import LoRaWAN
 
-    sender = UplinkSender(
+    sender = AckOnErrorSender(
         LoRaWAN(LoRaWAN.UPLINK),
         MESSAGE,
         RESIDUE

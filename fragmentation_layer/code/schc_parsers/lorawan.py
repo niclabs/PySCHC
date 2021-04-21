@@ -27,7 +27,7 @@ def parse(message):
     """
     rule_id = int.from_bytes(message[0:LoRaWAN().FPORT_LENGTH // 8], "big")
     if rule_id == LoRaWAN.UPLINK:
-        return __parse_uplink__(message)
+        return __parse_ack_on_error__(message)
     elif rule_id == LoRaWAN.DOWNLINK:
         return __parse_downlink__(message)
     elif rule_id == LoRaWAN.NOT_POSSIBLE:
@@ -36,9 +36,9 @@ def parse(message):
         raise ValueError("Rule ID not defined in protocol")
 
 
-def __parse_uplink__(message):
+def __parse_ack_on_error__(message):
     """
-    Parses message on uplink mode
+    Parses message on ack_on_error mode
 
     Parameters
     ----------
