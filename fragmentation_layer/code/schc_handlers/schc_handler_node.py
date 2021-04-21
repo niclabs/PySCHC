@@ -4,7 +4,7 @@ from schc_base import SCHCObject
 from schc_protocols import LoRaWAN, SCHCProtocol, get_protocol
 
 
-class SCHCFragmenterNode:
+class SCHCHandlerNode:
 
     def __init__(self, protocol):
         self.__protocol__ = get_protocol(protocol)
@@ -13,8 +13,8 @@ class SCHCFragmenterNode:
     def send_package(self, rule_id, packet, dtag=None):
         if self.__protocol__.id == SCHCProtocol.LoRaWAN:
             if rule_id == LoRaWAN.UPLINK:
-                from schc_machines.lorawan import AckOnErrorSender
-                self.assign_session(rule_id, dtag, AckOnErrorSender(LoRaWAN(LoRaWAN.UPLINK), packet))
+                from schc_machines.lorawan import UplinkSender
+                self.assign_session(rule_id, dtag, UplinkSender(LoRaWAN(LoRaWAN.UPLINK), packet))
             elif rule_id == LoRaWAN.DOWNLINK:
                 from schc_machines.lorawan import DownlinkSender
                 self.assign_session(rule_id, dtag, DownlinkSender(LoRaWAN(LoRaWAN.UPLINK), packet))
@@ -35,8 +35,8 @@ class SCHCFragmenterNode:
             dtag = int(dtag, 2)
         if self.__protocol__.id == SCHCProtocol.LoRaWAN:
             if rule_id == LoRaWAN.UPLINK:
-                from schc_machines.lorawan import AckOnErrorReceiver
-                self.assign_session(rule_id, dtag, AckOnErrorReceiver(LoRaWAN(LoRaWAN.UPLINK)))
+                from schc_machines.lorawan import UplinkReceiver
+                self.assign_session(rule_id, dtag, UplinkReceiver(LoRaWAN(LoRaWAN.UPLINK)))
             elif rule_id == LoRaWAN.DOWNLINK:
                 from schc_machines.lorawan import DownlinkReceiver
                 self.assign_session(rule_id, dtag, DownlinkReceiver(LoRaWAN(LoRaWAN.UPLINK)))

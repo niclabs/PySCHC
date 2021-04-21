@@ -1,0 +1,137 @@
+Packet IPv6: b'695fdfd300131140fc0c0000000000000000000000000094fc0c00000000000000000000000000087f017f800013437207025f0128040015040233'
+Lenght: 59 bytes
+Paquete original: b'695fdfd300131140fc0c0000000000000000000000000094fc0c00000000000000000000000000087f017f800013437207025f0128040015040233'
+Warning: The CDA "not-send" SHOULD be used with the "equal" MO
+Warning: The CDA "not-send" SHOULD be used with the "equal" MO
+Warning: The CDA "not-send" SHOULD be used with the "equal" MO
+SCHC Packet: b'4465bf80fc003812f809402000a8201198'
+Largo Headers sin comprimir: 48 bytes
+Largo Headers comprimido: 5 bytes
+Porcentaje de compresion: 89.58%
+Enviando paquete test
+Paquete original: b'600440e8001a113f2001063809020001020102fffee275962002518343830000000000005183438300150402e537a51f626bf2f850188160e86500003232302d0d0a'
+Enviando paquete 0
+Warning: The CDA "not-send" SHOULD be used with the "equal" MO
+SCHC Packet: b'602106380902000109460d0e0c000100150402e537a51f626bf2f850188160e86500003232302d0d0a'
+Largo Headers sin comprimir: 48 bytes
+Largo Headers comprimido: 22 bytes
+Porcentaje de compresion: 54.17%
+Paquete original: b'600440e80062113f2001063809020001020102fffee275962002518343830000000000005183438300150402e537a525626bf2f850188160da2a00003232302036626f6e652e696e666f726d6174696b2e756e692d6c6569707a69672e6465204654502073657276657220284e65744253442d66747064203230303431313139292072656164792e0d0a'
+Enviando paquete 1
+Header "IPv6.hopLimit" does not match with FID and DI in the RuleID 68
+The Rule MUST be disregarded
+Header "IPv6.hopLimit" does not match with FID and DI in the RuleID 96
+The Rule MUST be disregarded
+Header "IPv6.hopLimit" does not match with FID and DI in the RuleID 97
+The Rule MUST be disregarded
+Warning: The CDA "not-send" SHOULD be used with the "equal" MO
+Warning: The CDA "not-send" SHOULD be used with the "equal" MO
+SCHC Packet: b'622418e0240800049460d0e0c000100150402e537a525626bf2f850188160da2a00003232302036626f6e652e696e666f726d6174696b2e756e692d6c6569707a69672e6465204654502073657276657220284e65744253442d66747064203230303431313139292072656164792e0d0a0'
+Largo Headers sin comprimir: 48 bytes
+Largo Headers comprimido: 22 bytes
+Porcentaje de compresion: 54.17%
+Paquete original: b'6000000000241180200251834383000000000000518343832001063809020001020102fffee2759604020015626bf2f8e537a573501842640e9100005553455220616e6f6e796d6f75730d0a'
+Enviando paquete 2
+Warning: The CDA "not-send" SHOULD be used with the "equal" MO
+SCHC Packet: b'6109460d0e0c0001418e02408000404020015626bf2f8e537a573501842640e9100005553455220616e6f6e796d6f75730d0a0'
+Largo Headers sin comprimir: 48 bytes
+Largo Headers comprimido: 22 bytes
+Porcentaje de compresion: 54.17%
+Paquete original: b'600440e80045113f2001063809020001020102fffee275962002518343830000000000005183438300150402e537a573626bf3085018816098720000333331204775657374206c6f67696e206f6b2c207479706520796f7572206e616d652061732070617373776f72642e0d0a'
+Enviando paquete 3
+Header "IPv6.hopLimit" does not match with FID and DI in the RuleID 68
+The Rule MUST be disregarded
+Header "IPv6.hopLimit" does not match with FID and DI in the RuleID 96
+The Rule MUST be disregarded
+Header "IPv6.hopLimit" does not match with FID and DI in the RuleID 97
+The Rule MUST be disregarded
+Warning: The CDA "not-send" SHOULD be used with the "equal" MO
+Warning: The CDA "not-send" SHOULD be used with the "equal" MO
+SCHC Packet: b'622418e0240800049460d0e0c000100150402e537a573626bf3085018816098720000333331204775657374206c6f67696e206f6b2c207479706520796f7572206e616d652061732070617373776f72642e0d0a0'
+Largo Headers sin comprimir: 48 bytes
+Largo Headers comprimido: 22 bytes
+Porcentaje de compresion: 54.17%
+Paquete original: b'6000000000221180200251834383000000000000518343832001063809020001020102fffee2759604020015626bf308e537a5a4501842339a7c00005041535320494555736572400d0a'
+Enviando paquete 4
+Warning: The CDA "not-send" SHOULD be used with the "equal" MO
+SCHC Packet: b'6109460d0e0c0001418e02408000404020015626bf308e537a5a4501842339a7c00005041535320494555736572400d0a0'
+Largo Headers sin comprimir: 48 bytes
+Largo Headers comprimido: 22 bytes
+Porcentaje de compresion: 54.17%
+Paquete original: b'600440e80044113f2001063809020001020102fffee275962002518343830000000000005183438300150402e537a5a4626bf31650188160ab1b0000323330204775657374206c6f67696e206f6b2c20616363657373207265737472696374696f6e73206170706c792e0d0a'
+Enviando paquete 5
+Header "IPv6.hopLimit" does not match with FID and DI in the RuleID 68
+The Rule MUST be disregarded
+Header "IPv6.hopLimit" does not match with FID and DI in the RuleID 96
+The Rule MUST be disregarded
+Header "IPv6.hopLimit" does not match with FID and DI in the RuleID 97
+The Rule MUST be disregarded
+Warning: The CDA "not-send" SHOULD be used with the "equal" MO
+Warning: The CDA "not-send" SHOULD be used with the "equal" MO
+SCHC Packet: b'622418e0240800049460d0e0c000100150402e537a5a4626bf31650188160ab1b0000323330204775657374206c6f67696e206f6b2c20616363657373207265737472696374696f6e73206170706c792e0d0a0'
+Largo Headers sin comprimir: 48 bytes
+Largo Headers comprimido: 22 bytes
+Porcentaje de compresion: 54.17%
+Paquete original: b'6000000000221180200251834383000000000000518343832001063809020001020102fffee2759604020015626bf316e537a5d45018420368f900006f7074732075746638206f6e0d0a'
+Enviando paquete 6
+Warning: The CDA "not-send" SHOULD be used with the "equal" MO
+SCHC Packet: b'6109460d0e0c0001418e02408000404020015626bf316e537a5d45018420368f900006f7074732075746638206f6e0d0a0'
+Largo Headers sin comprimir: 48 bytes
+Largo Headers comprimido: 22 bytes
+Porcentaje de compresion: 54.17%
+Paquete original: b'600440e80031113f2001063809020001020102fffee275962002518343830000000000005183438300150402e537a5d4626bf32450188160ae96000035303220556e6b6e6f776e20636f6d6d616e64202775746638272e0d0a'
+Enviando paquete 7
+Header "IPv6.hopLimit" does not match with FID and DI in the RuleID 68
+The Rule MUST be disregarded
+Header "IPv6.hopLimit" does not match with FID and DI in the RuleID 96
+The Rule MUST be disregarded
+Header "IPv6.hopLimit" does not match with FID and DI in the RuleID 97
+The Rule MUST be disregarded
+Warning: The CDA "not-send" SHOULD be used with the "equal" MO
+Warning: The CDA "not-send" SHOULD be used with the "equal" MO
+SCHC Packet: b'622418e0240800049460d0e0c000100150402e537a5d4626bf32450188160ae96000035303220556e6b6e6f776e20636f6d6d616e64202775746638272e0d0a0'
+Largo Headers sin comprimir: 48 bytes
+Largo Headers comprimido: 22 bytes
+Porcentaje de compresion: 54.17%
+Paquete original: b'60000000001a1180200251834383000000000000518343832001063809020001020102fffee2759604020015626bf324e537a5f1501841e6a2530000737973740d0a'
+Enviando paquete 8
+Warning: The CDA "not-send" SHOULD be used with the "equal" MO
+SCHC Packet: b'6109460d0e0c0001418e02408000404020015626bf324e537a5f1501841e6a2530000737973740d0a0'
+Largo Headers sin comprimir: 48 bytes
+Largo Headers comprimido: 22 bytes
+Porcentaje de compresion: 54.17%
+Paquete original: b'600440e80045113f2001063809020001020102fffee275962002518343830000000000005183438300150402e537a5f1626bf32a501881607ccc000032313520554e495820547970653a204c382056657273696f6e3a204e65744253442d667470642032303034313131390d0a'
+Enviando paquete 9
+Header "IPv6.hopLimit" does not match with FID and DI in the RuleID 68
+The Rule MUST be disregarded
+Header "IPv6.hopLimit" does not match with FID and DI in the RuleID 96
+The Rule MUST be disregarded
+Header "IPv6.hopLimit" does not match with FID and DI in the RuleID 97
+The Rule MUST be disregarded
+Warning: The CDA "not-send" SHOULD be used with the "equal" MO
+Warning: The CDA "not-send" SHOULD be used with the "equal" MO
+SCHC Packet: b'622418e0240800049460d0e0c000100150402e537a5f1626bf32a501881607ccc000032313520554e495820547970653a204c382056657273696f6e3a204e65744253442d667470642032303034313131390d0a0'
+Largo Headers sin comprimir: 48 bytes
+Largo Headers comprimido: 22 bytes
+Porcentaje de compresion: 54.17%
+Paquete original: b'60000000001f1180200251834383000000000000518343832001063809020001020102fffee2759604020015626bf32ae537a622501841b5ae8f0000736974652068656c700d0a'
+Enviando paquete 10
+Warning: The CDA "not-send" SHOULD be used with the "equal" MO
+SCHC Packet: b'6109460d0e0c0001418e02408000404020015626bf32ae537a622501841b5ae8f0000736974652068656c700d0a0'
+Largo Headers sin comprimir: 48 bytes
+Largo Headers comprimido: 22 bytes
+Porcentaje de compresion: 54.17%
+Paquete original: b'600440e8001a113f2001063809020001020102fffee275962002518343830000000000005183438300150402e537a622626bf33550188160e32600003231342d0d0a'
+Enviando paquete 11
+Header "IPv6.hopLimit" does not match with FID and DI in the RuleID 68
+The Rule MUST be disregarded
+Header "IPv6.hopLimit" does not match with FID and DI in the RuleID 96
+The Rule MUST be disregarded
+Header "IPv6.hopLimit" does not match with FID and DI in the RuleID 97
+The Rule MUST be disregarded
+Warning: The CDA "not-send" SHOULD be used with the "equal" MO
+Warning: The CDA "not-send" SHOULD be used with the "equal" MO
+SCHC Packet: b'622418e0240800049460d0e0c000100150402e537a622626bf33550188160e32600003231342d0d0a0'
+Largo Headers sin comprimir: 48 bytes
+Largo Headers comprimido: 22 bytes
+Porcentaje de compresion: 54.17%
