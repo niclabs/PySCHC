@@ -68,7 +68,7 @@ if __name__ == '__main__':
     from schc_protocols import LoRaWAN
 
     sender = AckOnErrorSender(
-        LoRaWAN(LoRaWAN.UPLINK),
+        LoRaWAN(LoRaWAN.ACK_ON_ERROR),
         MESSAGE,
         RESIDUE
     )

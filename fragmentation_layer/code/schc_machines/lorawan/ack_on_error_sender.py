@@ -1,6 +1,5 @@
 """ ack_on_error_sender: AckOnError sender state machine """
 
-from __future__ import annotations
 from schc_base import Tile, Bitmap
 from schc_machines import SCHCSender
 from schc_messages import RegularSCHCFragment, All1SCHCFragment, SCHCAck

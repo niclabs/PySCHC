@@ -26,10 +26,10 @@ def parse(message):
         LoRaWAN cannot support fragmentation of message
     """
     rule_id = int.from_bytes(message[0:LoRaWAN().FPORT_LENGTH // 8], "big")
-    if rule_id == LoRaWAN.UPLINK:
+    if rule_id == LoRaWAN.ACK_ON_ERROR:
         return __parse_ack_on_error__(message)
-    elif rule_id == LoRaWAN.DOWNLINK:
-        return __parse_downlink__(message)
+    elif rule_id == LoRaWAN.ACK_ALWAYS:
+        return __parse_ack_always__(message)
     elif rule_id == LoRaWAN.NOT_POSSIBLE:
         raise RuntimeError("Cannot fragment message under LoRaWAN protocol")
     else:
@@ -57,7 +57,7 @@ def __parse_ack_on_error__(message):
     ValueError :
         Message of unknown type for LoRaWAN SCHC Compression
     """
-    protocol = LoRaWAN(rule_id=LoRaWAN.UPLINK)
+    protocol = LoRaWAN(rule_id=LoRaWAN.ACK_ON_ERROR)
     bits_received = SCHCMessage.bytes_2_bits(message)
     length = len(bits_received)
     assert length % protocol.L2_WORD == 0, "Bits received does not match L2 word"
@@ -85,9 +85,9 @@ def __parse_ack_on_error__(message):
         raise ValueError("Message of unknown type for LoRaWAN SCHC Compression")
 
 
-def __parse_downlink__(message):
+def __parse_ack_always__(message):
     """
-    Parses message on downlink mode
+    Parses message on ack_always mode
 
     Parameters
     ----------
@@ -99,7 +99,7 @@ def __parse_downlink__(message):
     SCHCMessage :
         SCHCMessage with attributes given by content received
     """
-    protocol = LoRaWAN(rule_id=LoRaWAN.DOWNLINK)
+    protocol = LoRaWAN(rule_id=LoRaWAN.ACK_ALWAYS)
     bits_received = SCHCMessage.bytes_2_bits(message)
     length = len(bits_received)
     assert length % protocol.L2_WORD == 0, "Bits received does not match L2 word"

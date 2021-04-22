@@ -1,13 +1,13 @@
-""" downlink_sender: Downlink sender state machine """
+""" ack_always_sender: AckAlways sender state machine """
 
-from schc_machines import SCHCSender, AckAlways
+from schc_machines import SCHCSender
 from schc_messages import SCHCMessage, SCHCAck, SCHCReceiverAbort
 from schc_protocols import SCHCProtocol
 
 
-class DownlinkSender(AckAlways, SCHCSender):
+class AckAlwaysSender(SCHCSender):
     """
-    Downlink Sender State Machine with Ack-on-Error Mode
+    AckAlways Sender State Machine with Ack-on-Error Mode
 
     Attributes
     ----------
@@ -144,7 +144,7 @@ class DownlinkSender(AckAlways, SCHCSender):
     def __init__(self, protocol, payload, residue = "", dtag = None):
         super().__init__(protocol, payload, residue=residue, dtag=dtag)
         AckAlways.__init__(self)
-        self.states["name_your_phase"] = DownlinkSender.TemplatePhase(self)
+        self.states["name_your_phase"] = AckAlwaysSender.TemplatePhase(self)
         # Could be harcoded... probably not a good idea
         self.regular_message_header_size = RegularSCHCFragment(
             self.state_machine.__rule_id__,

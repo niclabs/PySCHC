@@ -1,6 +1,5 @@
 """ ack_on_error_receiver: AckOnError receiver state machine """
 
-from __future__ import annotations
 from machine import Timer
 from schc_base import Bitmap
 from schc_machines import SCHCReceiver
@@ -27,11 +26,11 @@ class AckOnErrorReceiver(SCHCReceiver):
         """
         __name__ = "Receiving Phase"
 
-        def __init__(self, state_machine: AckOnErrorReceiver):
+        def __init__(self, state_machine):
             super().__init__(state_machine)
             self.__success__ = False
 
-        def on_expiration_time(self, alarm: Timer):
+        def on_expiration_time(self, alarm):
             """
             Executed on expiration time
 
@@ -49,7 +48,7 @@ class AckOnErrorReceiver(SCHCReceiver):
             self.sm.state.enter_state()
             return
 
-        def generate_message(self, mtu: int):
+        def generate_message(self, mtu):
             """
             Send messages saved on message_to_send variable
 
