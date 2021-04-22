@@ -1,4 +1,4 @@
-""" downlink_receiver: Downlink receiver state machine """
+""" ack_always_receiver: AckAlways receiver state machine """
 
 from typing import List
 from schc_machines import SCHCReceiver, AckAlways
@@ -6,9 +6,9 @@ from schc_messages import SCHCMessage, RegularSCHCFragment, SCHCAck, All1SCHCFra
 from schc_protocols import SCHCProtocol
 
 
-class DownlinkReceiver(AckAlways, SCHCReceiver):
+class AckAlwaysReceiver(AckAlways, SCHCReceiver):
     """
-    Downlink Receiver State Machine with Ack-on-Error Mode
+    AckAlways Receiver State Machine with Ack-on-Error Mode
 
     Attributes
     ----------
@@ -366,8 +366,8 @@ class DownlinkReceiver(AckAlways, SCHCReceiver):
     def __init__(self, protocol, dtag = None):
         super().__init__(protocol, dtag=dtag)
         AckAlways.__init__(self)
-        self.states["name_your_state"] = DowblinkReceiver.TemplatePhase(self)
-        # self.states["other_state"] = DownlinkReceiver.OtherPhase(self)
+        self.states["name_your_state"] = AckAlwaysReceiver.TemplatePhase(self)
+        # self.states["other_state"] = AckAlwaysReceiver.OtherPhase(self)
         self.state = self.states["name_your_phase"]  # Initial State
         self.state.enter_state()  # This generates logs to know current states
         # Check schc_machines/schc_receiver.py and schc_machines/schc_fsm.py

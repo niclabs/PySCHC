@@ -4,7 +4,7 @@ from schc_base import SCHCObject
 from schc_protocols import LoRaWAN, SCHCProtocol, get_protocol
 
 
-class SCHCFragmenterGateway:
+class SCHCHandlerGateway:
 
     def __init__(self, protocol):
         self.__protocol__ = get_protocol(protocol)
@@ -26,25 +26,25 @@ class SCHCFragmenterGateway:
 
     def send_package(self, rule_id, packet, dtag=None):
         if self.__protocol__.id == SCHCProtocol.LoRaWAN:
-            if rule_id == LoRaWAN.UPLINK:
-                from schc_machines.lorawan import UplinkSender
-                self.assign_session(rule_id, dtag, UplinkSender(LoRaWAN(LoRaWAN.UPLINK), packet))
-            elif rule_id == LoRaWAN.DOWNLINK:
-                from schc_machines.lorawan import DownlinkSender
-                self.assign_session(rule_id, dtag, DownlinkSender(LoRaWAN(LoRaWAN.UPLINK), packet))
+            if rule_id == LoRaWAN.ACK_ON_ERROR:
+                from schc_machines.lorawan import AckOnErrorSender
+                self.assign_session(rule_id, dtag, AckOnErrorSender(LoRaWAN(LoRaWAN.ACK_ON_ERROR), packet))
+            elif rule_id == LoRaWAN.ACK_ALWAYS:
+                from schc_machines.lorawan import AckAlwaysSender
+                self.assign_session(rule_id, dtag, AckAlwaysSender(LoRaWAN(LoRaWAN.ACK_ON_ERROR), packet))
         else:
             raise NotImplementedError("Just LoRaWAN implemented")
         self.__sessions__[rule_id][dtag].receive_message(message)
 
     def receive(self, rule_id, dtag, message, f_port=None):
         if self.__protocol__.id == SCHCProtocol.LoRaWAN:
-            if rule_id == LoRaWAN.UPLINK:
-                from schc_machines.lorawan import UplinkReceiver
-                self.assign_session(rule_id, dtag, UplinkReceiver(LoRaWAN(LoRaWAN.UPLINK)))
+            if rule_id == LoRaWAN.ACK_ON_ERROR:
+                from schc_machines.lorawan import AckOnErrorReceiver
+                self.assign_session(rule_id, dtag, AckOnErrorReceiver(LoRaWAN(LoRaWAN.ACK_ON_ERROR)))
                 self.__sessions__[rule_id][dtag].receive_message(message)
-            elif rule_id == LoRaWAN.DOWNLINK:
-                from schc_machines.lorawan import DownlinkReceiver
-                self.assign_session(rule_id, dtag, DownlinkReceiver(LoRaWAN(LoRaWAN.UPLINK)))
+            elif rule_id == LoRaWAN.ACK_ALWAYS:
+                from schc_machines.lorawan import AckAlwaysReceiver
+                self.assign_session(rule_id, dtag, AckAlwaysReceiver(LoRaWAN(LoRaWAN.ACK_ON_ERROR)))
             else:
                 pass
                 # TODO compression
