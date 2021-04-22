@@ -3,4 +3,3 @@
 from schc_machines.schc_fsm import SCHCFiniteStateMachine
 from schc_machines.schc_sender import SCHCSender
 from schc_machines.schc_receiver import SCHCReceiver
-from schc_machines.modes import AckOnError, AckAlways, NoAck
