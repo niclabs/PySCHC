@@ -67,7 +67,7 @@ class AckOnErrorSender(SCHCSender):
                                                   self.sm.__fcn__,
                                                   self.sm.protocol.id,
                                                   self.sm.__dtag__,
-                                                  self.sm.__current_window__)
+                                                  self.sm.__cw__)
             mtu_available = (mtu - (regular_message.size // 8)) * 8
             if len(self.sm.tiles) > 1:
                 candid = self.sm.tiles[0]
@@ -79,7 +79,7 @@ class AckOnErrorSender(SCHCSender):
                     mtu_available -= candid.size
                     candid = self.sm.tiles[0]
                     self._logger_.debug("Add tile with fcn {} for windows {}".format(
-                        self.sm.__fcn__, self.sm.__current_window__))
+                        self.sm.__fcn__, self.sm.__cw__))
                     self.sm.__fcn__ -= 1
                     if self.sm.__fcn__ < 0:
                         self.sm.state = self.sm.states["waiting_phase"]
@@ -94,7 +94,7 @@ class AckOnErrorSender(SCHCSender):
                     self.sm.__rule_id__,
                     self.sm.protocol.id,
                     self.sm.__dtag__,
-                    self.sm.__current_window__,
+                    self.sm.__cw__,
                     self.sm.rcs
                 )
                 all1.add_tile(last_tile)
@@ -143,7 +143,7 @@ class AckOnErrorSender(SCHCSender):
             -------
             None, alter state
             """
-            if self.sm.__current_window__ != schc_message.header.w:
+            if self.sm.__cw__ != schc_message.header.w:
                 # TODO
                 return
             else:
@@ -162,7 +162,7 @@ class AckOnErrorSender(SCHCSender):
                     if sum(self.sm.bitmap) == len(self.sm.bitmap):
                         self.sm.state = self.sm.states["sending_phase"]
                         self.sm.retransmission_timer.stop()
-                        self.sm.__current_window__ += 1
+                        self.sm.__cw__ += 1
                         self.sm.__fcn__ = self.sm.protocol.WINDOW_SIZE - 1
                         self.sm.state.enter_state()
                         return

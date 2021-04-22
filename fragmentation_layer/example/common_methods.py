@@ -34,7 +34,8 @@ def is_this_loss() -> bool:
     bool :
         True if sent does not occur
     """
-    return random.random() < PROBABILITY_OF_FAILURE
+    # return random.random() < PROBABILITY_OF_FAILURE
+    return False
 
 
 def send_socket(msg: bytes, port: int) -> None:
