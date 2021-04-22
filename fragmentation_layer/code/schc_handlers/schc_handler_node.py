@@ -15,7 +15,7 @@ class SCHCHandlerGateway(SCHCHandler):
                 from schc_machines.lorawan import AckOnErrorSender
                 self.assign_session(rule_id, dtag, AckOnErrorSender(LoRaWAN(LoRaWAN.ACK_ON_ERROR), packet))
             else:
-                raise ValueError("Rule ID not allowed for sending a message from a gateway")
+                raise ValueError("Rule ID not allowed for sending a message from a end device")
         else:
             raise NotImplementedError("Just LoRaWAN implemented")
         self.__sessions__[rule_id][dtag].receive_message(message)
@@ -25,7 +25,7 @@ class SCHCHandlerGateway(SCHCHandler):
             if rule_id == LoRaWAN.ACK_ALWAYS:
                 # message received
                 from schc_machines.lorawan import AckAlwaysReceiver
-                self.assign_session(rule_id, dtag, AckAlwaysReceiver(LoRaWAN(LoRaWAN.ACK_ON_ERROR)))
+                self.assign_session(rule_id, dtag, AckAlwaysReceiver(LoRaWAN(LoRaWAN.ACK_ALWAYS)))
                 self.__sessions__[rule_id][dtag].receive_message(message)
             elif rule_id == LoRaWAN.ACK_ON_ERROR:
                 # response received
