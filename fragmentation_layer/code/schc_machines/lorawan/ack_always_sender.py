@@ -1,11 +1,11 @@
 """ ack_always_sender: AckAlways sender state machine """
 
-from schc_machines import SCHCSender, AckAlways
+from schc_machines import SCHCSender
 from schc_messages import SCHCMessage, SCHCAck, SCHCReceiverAbort
 from schc_protocols import SCHCProtocol
 
 
-class AckAlwaysSender(AckAlways, SCHCSender):
+class AckAlwaysSender(SCHCSender):
     """
     AckAlways Sender State Machine with Ack-on-Error Mode
 

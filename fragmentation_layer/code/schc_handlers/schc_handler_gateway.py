@@ -26,12 +26,11 @@ class SCHCHandlerGateway:
 
     def send_package(self, rule_id, packet, dtag=None):
         if self.__protocol__.id == SCHCProtocol.LoRaWAN:
-            if rule_id == LoRaWAN.ACK_ON_ERROR:
-                from schc_machines.lorawan import AckOnErrorSender
-                self.assign_session(rule_id, dtag, AckOnErrorSender(LoRaWAN(LoRaWAN.ACK_ON_ERROR), packet))
-            elif rule_id == LoRaWAN.ACK_ALWAYS:
+            if rule_id == LoRaWAN.ACK_ALWAYS:
                 from schc_machines.lorawan import AckAlwaysSender
                 self.assign_session(rule_id, dtag, AckAlwaysSender(LoRaWAN(LoRaWAN.ACK_ON_ERROR), packet))
+            else:
+                raise ValueError("Rule ID not allowed for sending a message from a gateway")
         else:
             raise NotImplementedError("Just LoRaWAN implemented")
         self.__sessions__[rule_id][dtag].receive_message(message)
@@ -39,12 +38,13 @@ class SCHCHandlerGateway:
     def receive(self, rule_id, dtag, message, f_port=None):
         if self.__protocol__.id == SCHCProtocol.LoRaWAN:
             if rule_id == LoRaWAN.ACK_ON_ERROR:
+                # message received
                 from schc_machines.lorawan import AckOnErrorReceiver
                 self.assign_session(rule_id, dtag, AckOnErrorReceiver(LoRaWAN(LoRaWAN.ACK_ON_ERROR)))
                 self.__sessions__[rule_id][dtag].receive_message(message)
             elif rule_id == LoRaWAN.ACK_ALWAYS:
-                from schc_machines.lorawan import AckAlwaysReceiver
-                self.assign_session(rule_id, dtag, AckAlwaysReceiver(LoRaWAN(LoRaWAN.ACK_ON_ERROR)))
+                # response received
+                self.__sessions__[rule_id][dtag].receive_message(message)
             else:
                 pass
                 # TODO compression

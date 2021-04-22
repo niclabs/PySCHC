@@ -1,12 +1,12 @@
 """ ack_always_receiver: AckAlways receiver state machine """
 
 from typing import List
-from schc_machines import SCHCReceiver, AckAlways
+from schc_machines import SCHCReceiver
 from schc_messages import SCHCMessage, RegularSCHCFragment, SCHCAck, All1SCHCFragment
 from schc_protocols import SCHCProtocol
 
 
-class AckAlwaysReceiver(AckAlways, SCHCReceiver):
+class AckAlwaysReceiver(SCHCReceiver):
     """
     AckAlways Receiver State Machine with Ack-on-Error Mode
 

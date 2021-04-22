@@ -1,4 +1,4 @@
-""" schc_fragmenters: Package of fragmenters classes"""
+""" schc_handlers: Package of handlers classes"""
 
-from schc_fragmenters.schc_fragmenter_node import SCHCFragmenterNode
-from schc_fragmenters.schc_fragmenter_gateway import SCHCFragmenterGateway
+from schc_handlers.schc_handler_node import SCHCHandlerNode
+from schc_handlers.schc_handler_gateway import SCHCHandlerGateway

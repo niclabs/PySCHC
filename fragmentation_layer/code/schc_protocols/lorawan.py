@@ -7,8 +7,8 @@ class LoRaWAN(SCHCProtocol):
     """
     LoRaWAN Protocol Class
     """
-    UPLINK = 20
-    DOWNLINK = 21
+    ACK_ON_ERROR = 20
+    ACK_ALWAYS = 21
     NOT_POSSIBLE = 22
 
     def __init__(self, rule_id=0):
@@ -61,7 +61,7 @@ class LoRaWAN(SCHCProtocol):
     def __set_parameters__(self):
         if self.RULE_ID == 0:
             pass  # To get basic parameters
-        elif self.RULE_ID == LoRaWAN.UPLINK:  # AckOnError
+        elif self.RULE_ID == LoRaWAN.ACK_ON_ERROR:  # Uplink data transfer
             self.T = 0  # in bits
             self.M = 2  # in bits
             self.N = 6  # in bits
@@ -71,7 +71,7 @@ class LoRaWAN(SCHCProtocol):
             self.MAX_ACK_REQUEST = 1e6  # TODO
             self.INACTIVITY_TIMER = 10  # in seconds TODO
             self.RETRANSMISSION_TIMER = 10  # in seconds TODO
-        elif self.RULE_ID == LoRaWAN.DOWNLINK:  # Downlink
+        elif self.RULE_ID == LoRaWAN.ACK_ALWAYS:  # Downlink data transfer
             self.T = 0  # in bits
             self.M = 1  # in bits
             self.N = 1  # in bits
@@ -102,9 +102,9 @@ class LoRaWAN(SCHCProtocol):
         if payload == "":
             return ""
         else:
-            if self.RULE_ID == LoRaWAN.UPLINK:
+            if self.RULE_ID == LoRaWAN.ACK_ON_ERROR:
                 return payload[0: self.TILE_SIZE]
-            elif self.RULE_ID == LoRaWAN.DOWNLINK:
+            elif self.RULE_ID == LoRaWAN.ACK_ALWAYS:
                 return payload
 
     def calculate_rcs(self, packet):
@@ -132,7 +132,7 @@ class LoRaWAN(SCHCProtocol):
         int :
             Same as tile size on ack_on_error (none on downlink)
         """
-        if self.RULE_ID == LoRaWAN.UPLINK:
+        if self.RULE_ID == LoRaWAN.ACK_ON_ERROR:
             return self.TILE_SIZE
         else:
             return 0
