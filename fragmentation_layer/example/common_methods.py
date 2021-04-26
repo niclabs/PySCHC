@@ -96,29 +96,27 @@ def messaging_loop(machine: SCHCFiniteStateMachine, socket_rx: socket.socket, se
     -------
     None
     """
-    exit_all = False
     while True:
-        while True:
-            try:
-                mtu = get_mtu()
-                lost = is_this_loss()
-                message = machine.generate_message(mtu)
-                logging.info("Current mtu: {}".format(mtu))
-                logging.info("Package sent: {}".format(not lost))
-                if not lost:
-                    send_socket(message.as_bytes(), sender_port)
-            except GeneratorExit:
-                break
-            except SystemExit as e:
-                print(e)
-                exit_all = True
-                break
-        if exit_all:
+        mtu = get_mtu()
+        lost = is_this_loss()
+        try:
+            print("Sending...")
+            message = machine.generate_message(mtu)
+            logging.info("Current mtu: {}".format(mtu))
+            logging.info("Package sent: {}".format(not lost))
+            if not lost and message is not None:
+                send_socket(message.as_bytes(), sender_port)
+        except SystemExit as e:
+            print(e)
             break
-        data = receive_socket(socket_rx)
-        if data:
-            try:
-                machine.receive_message(data)
-            except SystemExit as e:
-                print(e)
-                break
+        try:
+            print("Receiving...")
+            data = receive_socket(socket_rx)
+            if data:
+                try:
+                    machine.receive_message(data)
+                except SystemExit as e:
+                    print(e)
+                    break
+        except socket.timeout:
+            pass

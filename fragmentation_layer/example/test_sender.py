@@ -57,6 +57,7 @@ Copyright Notice
 RESIDUE = "0101100"
 
 socket_rx = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+socket_rx.settimeout(1)
 socket_rx.bind((HOST, RECEIVER_PORT))
 socket_rx.listen(1)
 

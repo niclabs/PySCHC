@@ -1,6 +1,5 @@
 """ schc_fsm: SCHC Finite State Machine Abstract Class """
 
-import logging
 from machine import Timer
 from schc_base import AttemptsCounter, Bitmap
 from schc_messages import SCHCMessage
@@ -91,7 +90,7 @@ class SCHCFiniteStateMachine:
                 -------
                 None
                 """
-                self.__log__(logging.debug)
+                self.__log__(print)
                 return
 
             def schc_message(self, message):
@@ -108,7 +107,7 @@ class SCHCFiniteStateMachine:
                 None
                 """
                 self.enter_state()
-                logging.debug("\tMessage:\n{}".format(message.as_text()))
+                print("\tMessage:\n{}".format(message.as_text()))
                 return
 
             def error(self, message):
@@ -124,8 +123,8 @@ class SCHCFiniteStateMachine:
                 -------
                 None
                 """
-                self.__log__(logging.error)
-                logging.error("\t{}".format(message))
+                self.__log__(print)
+                print("\t{}".format(message))
                 return
 
             def warning(self, message):
@@ -141,8 +140,8 @@ class SCHCFiniteStateMachine:
                 -------
                 None
                 """
-                self.__log__(logging.warning)
-                logging.warning("\t{}".format(message))
+                self.__log__(print)
+                print("\t{}".format(message))
                 return
 
             def debug(self, message):
@@ -158,8 +157,8 @@ class SCHCFiniteStateMachine:
                 -------
                 None
                 """
-                self.__log__(logging.debug)
-                logging.debug("\t{}".format(message))
+                self.__log__(print)
+                print("\t{}".format(message))
                 return
 
             def info(self, message):
@@ -175,8 +174,8 @@ class SCHCFiniteStateMachine:
                 -------
                 None
                 """
-                self.__log__(logging.info)
-                logging.info("\t{}".format(message))
+                self.__log__(print)
+                print("\t{}".format(message))
                 return
 
         def __init__(self, state_machine):

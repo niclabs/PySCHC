@@ -137,7 +137,7 @@ class SCHCReceiver(SCHCFiniteStateMachine):
 
     def __init__(self, protocol, dtag=None):
         super().__init__(protocol, dtag=dtag)
-        self.payload: SCHCPayload = SCHCPayload()
+        self.payload = SCHCPayload()
         self.inactivity_timer = SCHCTimer(self.on_expiration_time, protocol.INACTIVITY_TIMER)
         self.__end_msg__ = "Message received and resembled"
         return

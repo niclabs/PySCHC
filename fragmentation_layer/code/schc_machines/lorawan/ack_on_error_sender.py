@@ -15,6 +15,8 @@ class AckOnErrorSender(SCHCSender):
     state
     residue
     """
+    __mode__ = "Ack On Error"
+
     class InitialPhase(SCHCSender.SenderState):
         """
         Initial Phase of Ack on Error
@@ -125,12 +127,8 @@ class AckOnErrorSender(SCHCSender):
             -------
             SCHCMessage :
                 None
-            Raises
-            ------
-            GeneratorExit
-                Awaits for Ack
             """
-            raise GeneratorExit("Awaits for Ack after a windows was sent")
+            return None
 
         def receive_schc_ack(self, schc_message):
             """

@@ -18,7 +18,6 @@ class SCHCHandlerGateway(SCHCHandler):
                 raise ValueError("Rule ID not allowed for sending a message from a end device")
         else:
             raise NotImplementedError("Just LoRaWAN implemented")
-        self.__sessions__[rule_id][dtag].receive_message(message)
 
     def receive(self, rule_id, dtag, message, f_port=None):
         if self.__protocol__.id == SCHCProtocol.LoRaWAN:
@@ -37,7 +36,4 @@ class SCHCHandlerGateway(SCHCHandler):
             raise NotImplementedError("Just LoRaWAN implemented")
 
     def generate_message(self, rule_id, dtag, mtu=512):
-        try:
-            return self.__sessions__[rule_id][dtag].generate_message(mtu).as_bytes()
-        except GeneratorExit:
-            return b''
+        return self.__sessions__[rule_id][dtag].generate_message(mtu).as_bytes()

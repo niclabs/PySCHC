@@ -8,6 +8,7 @@ RECEIVER_PORT = 50006
 SENDER_PORT = 50007
 
 socket_rx = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+socket_rx.settimeout(10)
 socket_rx.bind((HOST, RECEIVER_PORT))
 socket_rx.listen(1)
 

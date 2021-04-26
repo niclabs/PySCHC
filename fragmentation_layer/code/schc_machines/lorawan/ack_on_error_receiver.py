@@ -15,6 +15,8 @@ class AckOnErrorReceiver(SCHCReceiver):
     protocol
     state
     """
+    __mode__ = "Ack On Error"
+
     class ReceivingPhase(SCHCReceiver.ReceiverState):
         """
         Receiving Phase of Ack on Error
@@ -61,11 +63,6 @@ class AckOnErrorReceiver(SCHCReceiver):
             -------
             SCHCMessage :
                 A message saved to be send
-
-            Raises
-            ------
-            GeneratorExit
-                No message to be send
             """
             if self.sm.__last_window__ and self.__success__:
                 self.sm.state = self.sm.states["end"]
@@ -73,7 +70,8 @@ class AckOnErrorReceiver(SCHCReceiver):
                 message = self.sm.message_to_send.pop(0)
                 self._logger_.schc_message(message)
                 return message
-            raise GeneratorExit("No message to send, keep receiving")
+            else:
+                return None
 
         def receive_regular_schc_fragment(self, schc_message):
             """
@@ -229,7 +227,7 @@ class AckOnErrorReceiver(SCHCReceiver):
                 self._logger_.schc_message(message)
                 return message
             else:
-                raise GeneratorExit("No message to send, keep receiving")
+                return None
 
         def receive_regular_schc_fragment(self, schc_message):
             """

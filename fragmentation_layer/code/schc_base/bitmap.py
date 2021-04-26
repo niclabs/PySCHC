@@ -1,7 +1,5 @@
 """ bitmap: Bitmap class """
 
-from schc_protocols import SCHCProtocol
-
 
 class Bitmap:
     """
