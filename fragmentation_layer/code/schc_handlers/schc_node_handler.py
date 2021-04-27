@@ -4,7 +4,7 @@ from schc_handlers import SCHCHandler
 from schc_protocols import LoRaWAN, SCHCProtocol, get_protocol
 
 
-class SCHCHandlerGateway(SCHCHandler):
+class SCHCNodeHandler(SCHCHandler):
 
     def __init__(self, protocol):
         super().__init__(protocol)
