@@ -142,7 +142,12 @@ class AckOnErrorSender(SCHCSender):
             SCHCMessage :
                 None
             """
-            return None
+            if len(self.sm.message_to_send) != 0:
+                if self.sm.message_to_send[0].size - self.sm.protocol.FPORT_LENGTH <= mtu * 8:
+                    message = self.sm.message_to_send.pop(0)
+                    return message
+            else:
+                return None
 
         def receive_schc_ack(self, schc_message):
             """
