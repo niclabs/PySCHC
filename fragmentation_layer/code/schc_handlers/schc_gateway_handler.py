@@ -1,4 +1,9 @@
 """ schc_gateway_handler: SCHC Gateway Handler Class """
+import sys
+
+if sys.implementation.name != 'micropython':
+    import requests
+    import base64
 
 from schc_handlers import SCHCHandler
 from schc_protocols import LoRaWAN, SCHCProtocol
@@ -8,8 +13,6 @@ class SCHCGatewayHandler(SCHCHandler):
 
     def __init__(self, protocol, mtu):
         super().__init__(protocol, mtu)
-        import requests
-        import base64
 
     def send_package(self, packet):
         if self.__protocol__.id == SCHCProtocol.LoRaWAN:
