@@ -29,7 +29,7 @@ class SCHCHandler:
     def send_package(self, packet):
         return
 
-    def receive(self, rule_id, dtag, message, f_port=None):
+    def receive(self, rule_id, dtag, message):
         return
 
     def generate_message(self, rule_id, dtag, mtu=512):

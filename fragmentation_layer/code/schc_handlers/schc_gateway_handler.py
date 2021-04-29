@@ -16,7 +16,7 @@ class SCHCGatewayHandler(SCHCHandler):
         else:
             raise NotImplementedError("Just LoRaWAN implemented")
 
-    def receive(self, rule_id, dtag, message, f_port=None):
+    def receive(self, rule_id, dtag, message):
         if self.__protocol__.id == SCHCProtocol.LoRaWAN:
             if rule_id == LoRaWAN.ACK_ON_ERROR:
                 # message received
@@ -29,6 +29,14 @@ class SCHCGatewayHandler(SCHCHandler):
             else:
                 pass
                 # TODO compression
+        else:
+            raise NotImplementedError("Just LoRaWAN implemented")
+
+    def handle(self, message, f_port=None):
+        if self.__protocol__.id == SCHCProtocol.LoRaWAN:
+            r,d = self.identify_session_from_message(message, f_port)
+            self.receive(r,d,bytes([f_port]) + message)
+            return self.generate_message(r,d)
         else:
             raise NotImplementedError("Just LoRaWAN implemented")
 

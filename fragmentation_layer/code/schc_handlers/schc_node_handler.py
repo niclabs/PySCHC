@@ -16,7 +16,7 @@ class SCHCNodeHandler(SCHCHandler):
         else:
             raise NotImplementedError("Just LoRaWAN implemented")
 
-    def receive(self, rule_id, dtag, message, f_port=None):
+    def receive(self, rule_id, dtag, message):
         if self.__protocol__.id == SCHCProtocol.LoRaWAN:
             if rule_id == LoRaWAN.ACK_ALWAYS:
                 # message received
