@@ -4,6 +4,7 @@ import sys
 if sys.implementation.name != 'micropython':
     import requests
     import base64
+    import json
 
 from schc_handlers import SCHCHandler
 from schc_protocols import LoRaWAN, SCHCProtocol
@@ -51,9 +52,11 @@ class SCHCGatewayHandler(SCHCHandler):
                 "dev_id": dev_id,
                 "port": f_port,
                 "confirmed": False,
-                "payload_raw": base64.b64encode(response).decode("utf-8")
+                "payload_raw": base64.b64encode(response[1:]).decode("utf-8")
             }
-            requests.post(url, post_obj)
+            r = requests.post(url, data=json.dumps(post_obj), headers={'content-type': 'application/json'})
+            print(r.status_code)
+
 
     def generate_message(self, rule_id, dtag, mtu=512):
         message = self.__sessions__[rule_id][dtag].generate_message(mtu)
