@@ -6,8 +6,8 @@ from schc_protocols import LoRaWAN, SCHCProtocol
 
 class SCHCGatewayHandler(SCHCHandler):
 
-    def __init__(self, protocol):
-        super().__init__(protocol)
+    def __init__(self, protocol, mtu):
+        super().__init__(protocol, mtu)
 
     def send_package(self, packet):
         if self.__protocol__.id == SCHCProtocol.LoRaWAN:
