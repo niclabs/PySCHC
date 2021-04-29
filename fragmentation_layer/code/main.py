@@ -16,9 +16,9 @@ from schc_protocols import SCHCProtocol
 lora = LoRa(mode=LoRa.LORAWAN, region=LoRa.AU915)
 
 # create an ABP authentication params
-dev_addr = struct.unpack(">l", binascii.unhexlify('2601350A'))[0]
-nwk_swkey = binascii.unhexlify('2A46B48AE1418C4C55CFA6B06822FBE8')
-app_swkey = binascii.unhexlify('A9054AA86E7049BC5D76C4E40CDE44E9')
+dev_addr = struct.unpack(">l", binascii.unhexlify('26011011'))[0]
+nwk_swkey = binascii.unhexlify('40792D626980A95B0F1F863C291D420E')
+app_swkey = binascii.unhexlify('5ED101DD805B089C90BC3BD1061EA6FC')
 
 # Uncomment for US915 / AU915 & Pygate
 for i in range(0, 8):
