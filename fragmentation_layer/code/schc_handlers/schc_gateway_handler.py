@@ -8,6 +8,8 @@ class SCHCGatewayHandler(SCHCHandler):
 
     def __init__(self, protocol, mtu):
         super().__init__(protocol, mtu)
+        import requests
+        import base64
 
     def send_package(self, packet):
         if self.__protocol__.id == SCHCProtocol.LoRaWAN:
@@ -32,13 +34,23 @@ class SCHCGatewayHandler(SCHCHandler):
         else:
             raise NotImplementedError("Just LoRaWAN implemented")
 
-    def handle(self, message, f_port=None):
+    def handle(self, message, f_port=None, url=None, dev_id=None):
         if self.__protocol__.id == SCHCProtocol.LoRaWAN:
             r,d = self.identify_session_from_message(message, bytes([f_port]))
             self.receive(r,d,bytes([f_port]) + message)
-            return self.generate_message(r,d)
+            response = self.generate_message(r,d)
         else:
             raise NotImplementedError("Just LoRaWAN implemented")
+        if url is None:
+            return response
+        else:
+            post_obj = {
+                "dev_id": dev_id,
+                "port": f_port,
+                "confirmed": False,
+                "payload_raw": base64.b64encode(response).decode("utf-8")
+            }
+            requests.post(url, post_obj)
 
     def generate_message(self, rule_id, dtag, mtu=512):
         message = self.__sessions__[rule_id][dtag].generate_message(mtu)
