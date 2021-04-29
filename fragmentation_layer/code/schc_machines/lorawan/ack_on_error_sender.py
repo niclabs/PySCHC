@@ -2,7 +2,7 @@
 
 from schc_base import Tile, Bitmap
 from schc_machines import SCHCSender
-from schc_messages import RegularSCHCFragment, All1SCHCFragment, SCHCAck
+from schc_messages import RegularSCHCFragment, All1SCHCFragment, SCHCAck, SCHCAckReq
 
 
 class AckOnErrorSender(SCHCSender):
@@ -89,6 +89,12 @@ class AckOnErrorSender(SCHCSender):
                         self.sm.state = self.sm.states["waiting_phase"]
                         self.sm.retransmission_timer.reset()
                         self.sm.state.enter_state()
+                        self.sm.message_to_send.append(SCHCAckReq(
+                            self.sm.__rule_id__,
+                            self.sm.protocol.id,
+                            self.sm.__cw__,
+                            self.sm.__dtag__
+                        ))
                         break
             else:
                 last_tile = self.sm.tiles.pop(0)
@@ -106,6 +112,12 @@ class AckOnErrorSender(SCHCSender):
                 self.sm.state = self.sm.states["waiting_phase"]
                 self.sm.state.enter_state()
                 self.sm.retransmission_timer.reset()
+                self.sm.message_to_send.append(SCHCAckReq(
+                    self.sm.__rule_id__,
+                    self.sm.protocol.id,
+                    self.sm.__cw__,
+                    self.sm.__dtag__
+                ))
                 all1.add_padding()
                 return all1
             regular_message.add_padding()

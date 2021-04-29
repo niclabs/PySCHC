@@ -112,7 +112,7 @@ class SCHCProtocol:
         # TODO: self implementation of crc32
         # from binascii import crc32
         # return hex(crc32(SCHCObject.bits_2_bytes(packet)))
-        return ""
+        return "0xb4cc4a0"
 
     def penultimate_tile(self):
         """
