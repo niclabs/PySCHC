@@ -34,7 +34,7 @@ class SCHCGatewayHandler(SCHCHandler):
 
     def handle(self, message, f_port=None):
         if self.__protocol__.id == SCHCProtocol.LoRaWAN:
-            r,d = self.identify_session_from_message(message, f_port)
+            r,d = self.identify_session_from_message(message, bytes([f_port]))
             self.receive(r,d,bytes([f_port]) + message)
             return self.generate_message(r,d)
         else:
