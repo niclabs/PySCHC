@@ -4,18 +4,15 @@ from schc_handlers import SCHCHandler
 from schc_protocols import LoRaWAN, SCHCProtocol, get_protocol
 
 
-class SCHCHandlerGateway(SCHCHandler):
+class SCHCGatewayHandler(SCHCHandler):
 
     def __init__(self, protocol):
         super().__init__(protocol)
 
-    def send_package(self, rule_id, packet, dtag=None):
+    def send_package(self, packet):
         if self.__protocol__.id == SCHCProtocol.LoRaWAN:
-            if rule_id == LoRaWAN.ACK_ALWAYS:
-                from schc_machines.lorawan import AckAlwaysSender
-                self.assign_session(rule_id, dtag, AckAlwaysSender(LoRaWAN(LoRaWAN.ACK_ON_ERROR), packet))
-            else:
-                raise ValueError("Rule ID not allowed for sending a message from a gateway")
+            from schc_machines.lorawan import AckAlwaysSender
+            self.assign_session(LoRaWAN.ACK_ALWAYS, None, AckAlwaysSender(LoRaWAN(LoRaWAN.ACK_ALWAYS), packet))
         else:
             raise NotImplementedError("Just LoRaWAN implemented")
         self.__sessions__[rule_id][dtag].receive_message(message)
