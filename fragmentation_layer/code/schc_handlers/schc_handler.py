@@ -32,9 +32,6 @@ class SCHCHandler:
     def receive(self, rule_id, dtag, message):
         return
 
-    def generate_message(self, rule_id, dtag, mtu=512):
-        raise GeneratorExit("Abstract class cannot generate message")
-
     def assign_session(self, rule_id, dtag, machine):
         if rule_id not in self.__sessions__.keys():
             self.__sessions__[rule_id] = dict()

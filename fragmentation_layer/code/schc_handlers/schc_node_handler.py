@@ -32,12 +32,6 @@ class SCHCNodeHandler(SCHCHandler):
         else:
             raise NotImplementedError("Just LoRaWAN implemented")
 
-    def generate_message(self, rule_id, dtag, mtu=512):
-        try:
-            return self.__sessions__[rule_id][dtag].generate_message(mtu).as_bytes()
-        except GeneratorExit:
-            return b''
-
     def start(self, s):
         while True:
             for rule_id in self.__sessions__.keys():

@@ -41,7 +41,8 @@ class SCHCGatewayHandler(SCHCHandler):
             raise NotImplementedError("Just LoRaWAN implemented")
 
     def generate_message(self, rule_id, dtag, mtu=512):
-        try:
-            return self.__sessions__[rule_id][dtag].generate_message(mtu).as_bytes()
-        except GeneratorExit:
-            return b''
+        message = self.__sessions__[rule_id][dtag].generate_message(mtu)
+        if message is None:
+            return message
+        else:
+            return message.as_bytes()
