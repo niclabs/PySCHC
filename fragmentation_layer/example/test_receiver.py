@@ -32,4 +32,3 @@ if __name__ == '__main__':
     message = SCHCObject.bits_2_bytes(packet)
     with open("received.txt", "w", encoding="utf-8") as received_file:
         received_file.write(message.decode("ascii"))
-        received_file.write("\nAnd residue:\t{}\n".format(residue))
