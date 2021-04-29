@@ -109,8 +109,10 @@ class SCHCProtocol:
         str :
             Result of Reassembly Check Sequence (RCS)
         """
-        from binascii import crc32
-        return hex(crc32(SCHCObject.bits_2_bytes(packet)))
+        # TODO: self implementation of crc32
+        # from binascii import crc32
+        # return hex(crc32(SCHCObject.bits_2_bytes(packet)))
+        return ""
 
     def penultimate_tile(self):
         """

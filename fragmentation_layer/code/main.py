@@ -5,7 +5,7 @@ import struct
 
 from message import MESSAGE
 from schc_handlers import SCHCNodeHandler
-from schc_protocols import LoRaWAN
+from schc_protocols import SCHCProtocol
 
 # Initialise LoRa in LORAWAN mode.
 # Please pick the region that matches where you are using the device:
@@ -37,6 +37,6 @@ s = socket.socket(socket.AF_LORA, socket.SOCK_RAW)
 # set the LoRaWAN data rate
 s.setsockopt(socket.SOL_LORA, socket.SO_DR, 0)
 
-handler = SCHCNodeHandler(LoRaWAN(LoRaWAN.ACK_ON_ERROR), 51)
+handler = SCHCNodeHandler(SCHCProtocol.LoRaWAN, 51)
 handler.send_package(MESSAGE)
 handler.start(s)
