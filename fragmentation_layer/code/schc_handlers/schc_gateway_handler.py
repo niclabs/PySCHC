@@ -46,7 +46,7 @@ class SCHCGatewayHandler(SCHCHandler):
             raise NotImplementedError("Just LoRaWAN implemented")
         if url is None:
             return response
-        else:
+        elif response is None:
             post_obj = {
                 "dev_id": dev_id,
                 "port": f_port,
