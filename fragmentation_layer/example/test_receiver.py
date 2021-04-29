@@ -26,8 +26,6 @@ if __name__ == '__main__':
     messaging_loop(receiver, socket_rx, SENDER_PORT)
 
     packet = receiver.payload.as_bits()
-    residue = packet[0:7]
-    packet = packet[7:-1]
     assert len(packet) % 8 == 0
 
     from schc_base import SCHCObject

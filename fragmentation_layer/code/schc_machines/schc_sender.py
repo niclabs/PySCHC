@@ -91,7 +91,7 @@ class SCHCSender(SCHCFiniteStateMachine):
             self.sm.state.enter_state()
             return
 
-    def __init__(self, protocol, payload, residue="", dtag=None):
+    def __init__(self, protocol, payload, padding=0, dtag=None):
         """
         Constructor
 
@@ -100,16 +100,20 @@ class SCHCSender(SCHCFiniteStateMachine):
         protocol
         payload : bytes
             Payload to fragment
-        residue : str
-            Bits (as a string) obtained as residue of compression process
+        padding : int
+            Padding size
         dtag
         """
         super().__init__(protocol, dtag=dtag)
         self.retransmission_timer = SCHCTimer(self.on_expiration_time, protocol.RETRANSMISSION_TIMER)
         self.retransmission_timer.stop()
         self.packet = payload
-        self.residue = residue
-        self.remaining_packet = residue + SCHCObject.bytes_2_bits(payload)
-        self.rcs = self.protocol.calculate_rcs(self.remaining_packet)
+        if padding == 0:
+            self.remaining_packet = SCHCObject.bytes_2_bits(payload)
+            self.rcs = self.protocol.calculate_rcs(self.remaining_packet)
+        else:
+            payload_as_bits = SCHCObject.bytes_2_bits(payload)
+            self.remaining_packet = payload_as_bits[0:-padding]
+            self.rcs = self.protocol.calculate_rcs(payload_as_bits)
         self.__end_msg__ = "Message sent and acknowledged"
         return

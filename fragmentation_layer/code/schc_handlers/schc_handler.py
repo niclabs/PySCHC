@@ -4,11 +4,13 @@ from schc_base import SCHCObject
 from schc_protocols import SCHCProtocol, get_protocol
 
 
+# TODO: 
 class SCHCHandler:
 
-    def __init__(self, protocol):
+    def __init__(self, protocol, mtu):
         self.__protocol__ = get_protocol(protocol)
         self.__sessions__ = dict()
+        self.__mtu__ = mtu
 
     def identify_session_from_message(self, message, f_port=None):
         if self.__protocol__.id == SCHCProtocol.LoRaWAN:
@@ -24,7 +26,7 @@ class SCHCHandler:
             dtag = int(dtag, 2)
         return rule_id, dtag
 
-    def send_package(self, rule_id, packet, dtag=None):
+    def send_package(self, packet):
         return
 
     def receive(self, rule_id, dtag, message, f_port=None):

@@ -71,6 +71,8 @@ class AckOnErrorSender(SCHCSender):
                                                   self.sm.__dtag__,
                                                   self.sm.__cw__)
             mtu_available = (mtu - (regular_message.size // 8)) * 8
+            # MTU should not count FPort
+            mtu_available += regular_message.header.rule_id.size
             if len(self.sm.tiles) > 1:
                 candid = self.sm.tiles[0]
                 while mtu_available >= candid.size and len(self.sm.tiles) > 1:
@@ -168,16 +170,13 @@ class AckOnErrorSender(SCHCSender):
                         # TODO
                         return
 
-    def __init__(self, protocol, payload, residue="", dtag=None):
-        super().__init__(protocol, payload, residue=residue, dtag=dtag)
+    def __init__(self, protocol, payload, padding=0, dtag=None):
+        super().__init__(protocol, payload, padding=padding, dtag=dtag)
         self.states["initial_phase"] = AckOnErrorSender.InitialPhase(self)
         self.states["sending_phase"] = AckOnErrorSender.SendingPhase(self)
         self.states["waiting_phase"] = AckOnErrorSender.WaitingPhase(self)
         self.state = self.states["initial_phase"]
         self.state.enter_state()
-        if len(self.remaining_packet) % self.protocol.L2_WORD != 0:
-            padding = "0" * (self.protocol.L2_WORD - (len(self.remaining_packet) % self.protocol.L2_WORD))
-            self.rcs = self.protocol.calculate_rcs(self.remaining_packet + padding)
         self.tiles = list()
         self.sent_tiles = list()
         self.state.__generate_tiles__()

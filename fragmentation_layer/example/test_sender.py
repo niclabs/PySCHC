@@ -70,8 +70,7 @@ if __name__ == '__main__':
 
     sender = AckOnErrorSender(
         LoRaWAN(LoRaWAN.ACK_ON_ERROR),
-        MESSAGE,
-        RESIDUE
+        MESSAGE
     )
 
     messaging_loop(sender, socket_rx, SENDER_PORT)
