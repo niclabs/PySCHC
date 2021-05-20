@@ -286,7 +286,7 @@ class AckOnErrorReceiver(SCHCReceiver):
             if not self.sm.__last_window__:
                 self.sm.message_to_send.append(
                     SCHCAck(self.sm.__rule_id__, self.sm.protocol.id,
-                            c=False, w=w, compressed_bitmap=self.sm.bitmaps[w])
+                            c=False, w=w, compressed_bitmap=self.sm.bitmaps[w].generate_compress())
                 )
             else:
                 pass
