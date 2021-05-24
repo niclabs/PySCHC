@@ -1,11 +1,10 @@
 """ test_receiver: Test script Receiver side"""
 
+import base64
 import logging
 import socket
-import json
 import requests
-
-from common_methods import HOST, MTU, send_socket, receive_socket, is_this_loss, get_mtu
+from common_methods import HOST, receive_socket
 
 RECEIVER_PORT = 50006
 SENDER_PORT = 50007
@@ -34,7 +33,7 @@ if __name__ == '__main__':
                         "downlink_url": "http://{}:{}/to_socket".format(
                             HOST, 5000
                         ),
-                        "payload_raw": data[1:].decode("utf-8")
+                        "payload_raw": base64.b64encode(data[1:]).decode("utf-8")
                     })
         except socket.timeout:
             pass

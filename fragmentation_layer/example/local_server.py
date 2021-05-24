@@ -20,7 +20,7 @@ def execute_test():
     dev_id = data["dev_id"]
     downlink_url = data["downlink_url"]
     print(fport, dev_id, downlink_url)
-    msg_bytes = data["payload_raw"].encode("ascii")
+    msg_bytes = base64.b64decode(data["payload_raw"].encode("utf-8"))
     handler.handle(msg_bytes, fport, downlink_url, dev_id)
     return json.dumps({"Message": "Okay"}), 200
 
