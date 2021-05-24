@@ -31,6 +31,7 @@ def sent_to_socket():
     to_send = bytes([data["port"]]) + base64.b64decode(data["payload_raw"].encode("utf-8"))
     queue.append(to_send)
     try:
+        print(queue)
         candid = queue[0]
         send_socket(candid, SENDER_PORT)
         print(queue.pop(0))
