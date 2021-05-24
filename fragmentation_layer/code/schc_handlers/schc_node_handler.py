@@ -58,5 +58,5 @@ class SCHCNodeHandler(SCHCHandler):
                         data = s.recvfrom(512)
                         print(data)
                         if data[0] != b'':
-                            r, d = self.identify_session_from_message(data)
-                            self.receive(r, d, data)
+                            r, d = self.identify_session_from_message(*data)
+                            self.receive(r, d, bytes([data[1]]) + data[0])

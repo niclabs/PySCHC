@@ -124,6 +124,21 @@ class AckOnErrorSender(SCHCSender):
             self._logger_.schc_message(regular_message)
             return regular_message
 
+        def receive_schc_ack(self, schc_message):
+            """
+            Logs SCHC ACK
+
+            Parameters
+            ----------
+            schc_message : SCHCAck
+                Message received
+
+            Returns
+            -------
+            None
+            """
+            self._logger_.debug("Received SCHC ACK. Ignoring.")
+
     class WaitingPhase(SCHCSender.SenderState):
         """
         Waiting Phase of Ack on Error

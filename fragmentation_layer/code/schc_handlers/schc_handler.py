@@ -14,7 +14,7 @@ class SCHCHandler:
 
     def identify_session_from_message(self, message, f_port=None):
         if self.__protocol__.id == SCHCProtocol.LoRaWAN:
-            rule_id = int.from_bytes(f_port, "big")
+            rule_id = f_port
         else:
             raise NotImplementedError("Just LoRaWAN implemented")
         protocol = get_protocol(self.__protocol__.id)

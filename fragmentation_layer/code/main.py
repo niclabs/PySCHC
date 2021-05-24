@@ -3,7 +3,7 @@ import socket
 import binascii
 import struct
 
-from message import MESSAGE
+from message import SHORT_MESSAGE
 from schc_handlers import SCHCNodeHandler
 from schc_protocols import SCHCProtocol
 
@@ -16,9 +16,9 @@ from schc_protocols import SCHCProtocol
 lora = LoRa(mode=LoRa.LORAWAN, region=LoRa.AU915)
 
 # create an ABP authentication params
-dev_addr = struct.unpack(">l", binascii.unhexlify('26011011'))[0]
-nwk_swkey = binascii.unhexlify('40792D626980A95B0F1F863C291D420E')
-app_swkey = binascii.unhexlify('5ED101DD805B089C90BC3BD1061EA6FC')
+dev_addr = struct.unpack(">l", binascii.unhexlify('260138EA'))[0]
+nwk_swkey = binascii.unhexlify('133CD7499E57B03FF0430D14FF479D71')
+app_swkey = binascii.unhexlify('A9CEF74251EC08F21FBEFBD8E08D3206')
 
 # Uncomment for US915 / AU915 & Pygate
 for i in range(0, 8):
@@ -38,5 +38,5 @@ s = socket.socket(socket.AF_LORA, socket.SOCK_RAW)
 s.setsockopt(socket.SOL_LORA, socket.SO_DR, 0)
 
 handler = SCHCNodeHandler(SCHCProtocol.LoRaWAN, 51)
-handler.send_package(MESSAGE)
+handler.send_package(SHORT_MESSAGE)
 handler.start(s)

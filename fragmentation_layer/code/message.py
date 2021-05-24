@@ -43,3 +43,4 @@ Copyright Notice
    the Trust Legal Provisions and are provided without warranty as
    described in the Simplified BSD License.
 """.encode("ascii")
+SHORT_MESSAGE = "Copyright (c) 2021 IETF Trust and the persons identified as the document authors.  All rights reserved.".encode("ascii")
