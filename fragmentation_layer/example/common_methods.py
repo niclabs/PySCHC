@@ -6,7 +6,7 @@ import logging
 from schc_machines import SCHCFiniteStateMachine
 
 HOST = "127.0.0.1"
-MTU = 50
+MTU = 51
 SEED = 8
 PROBABILITY_OF_FAILURE = 0.05
 

@@ -3,56 +3,11 @@
 import logging
 import socket
 
-from common_methods import messaging_loop, HOST
+from message import MESSAGE
+from common_methods import HOST, MTU, get_mtu, is_this_loss, send_socket, receive_socket
 
 RECEIVER_PORT = 50007
 SENDER_PORT = 50006
-
-MESSAGE = """
-Abstract
-
-   The Static Context Header Compression (SCHC) specification describes
-   generic header compression and fragmentation techniques for Low Power
-   Wide Area Networks (LPWAN) technologies.  SCHC is a generic mechanism
-   designed for great flexibility so that it can be adapted for any of
-   the LPWAN technologies.
-
-   This document specifies a profile of RFC8724 to use SCHC in
-   LoRaWAN(R) networks, and provides elements such as efficient
-   parameterization and modes of operation.
-
-Status of This Memo
-
-   This Internet-Draft is submitted in full conformance with the
-   provisions of BCP 78 and BCP 79.
-
-   Internet-Drafts are working documents of the Internet Engineering
-   Task Force (IETF).  Note that other groups may also distribute
-   working documents as Internet-Drafts.  The list of current Internet-
-   Drafts is at https://datatracker.ietf.org/drafts/current/.
-
-   Internet-Drafts are draft documents valid for a maximum of six months
-   and may be updated, replaced, or obsoleted by other documents at any
-   time.  It is inappropriate to use Internet-Drafts as reference
-   material or to cite them other than as "work in progress."
-
-   This Internet-Draft will expire on July 29, 2021.
-
-Copyright Notice
-
-   Copyright (c) 2021 IETF Trust and the persons identified as the
-   document authors.  All rights reserved.
-
-   This document is subject to BCP 78 and the IETF Trust's Legal
-   Provisions Relating to IETF Documents
-   (https://trustee.ietf.org/license-info) in effect on the date of
-   publication of this document.  Please review these documents 
-   carefully, as they describe your rights and restrictions with respect
-   to this document.  Code Components extracted from this document must
-   include Simplified BSD License text as described in Section 4.e of
-   the Trust Legal Provisions and are provided without warranty as
-   described in the Simplified BSD License.
-""".encode("ascii")
 
 RESIDUE = "0101100"
 
@@ -62,15 +17,91 @@ socket_rx.bind((HOST, RECEIVER_PORT))
 socket_rx.listen(1)
 
 
+class TestSocket:
+
+    def __init__(self, a_socket, port):
+        self.__socket__ = a_socket
+        self.__port__ = port
+        self.__f_port__ = 0
+        return
+
+    def bind(self, f_port):
+        """
+        Bind method equivalent to pycom.socket.bind
+
+        Parameters
+        ----------
+        f_port : int
+            FPort of SCHC Message
+
+        Returns
+        -------
+        None
+        """
+        self.__f_port__ = f_port
+        return
+
+    def setblocking(self, block):
+        """
+        Block the socket
+
+        Parameters
+        ----------
+        block : bool
+            Whether or not keep the socket blocked
+
+        Returns
+        -------
+        None
+        """
+        self.__socket__.setblocking(block)
+        return
+
+    def send(self, content):
+        """
+        Send a message
+
+        Parameters
+        ----------
+        content : bytes
+            Bytes to send
+
+        Returns
+        -------
+        None
+        """
+        send_socket(bytes([self.__f_port__]) + content, self.__port__)
+        return
+
+    def recvfrom(self, buffer_size):
+        """
+        Receives a message from gateway
+
+        Parameters
+        ----------
+        buffer_size : int
+            Size of the buffer
+
+        Returns
+        -------
+        Tuple[bytes, int]
+            Message received and FPort of message
+        """
+        try:
+            data = receive_socket(self.__socket__)
+            return data[1:], int(data[0])
+        except BlockingIOError:
+            return b'', 0
+
+
 if __name__ == '__main__':
     logging.basicConfig(level=logging.DEBUG)
 
-    from schc_machines.lorawan import AckOnErrorSender
-    from schc_protocols import LoRaWAN
+    s = TestSocket(socket_rx, SENDER_PORT)
 
-    sender = AckOnErrorSender(
-        LoRaWAN(LoRaWAN.ACK_ON_ERROR),
-        MESSAGE
-    )
+    from schc_handlers import SCHCNodeHandler
+    from schc_protocols import SCHCProtocol
 
-    messaging_loop(sender, socket_rx, SENDER_PORT)
+    handler = SCHCNodeHandler(SCHCProtocol.LoRaWAN, MTU)
+    handler.send_package(MESSAGE)
+    handler.start(s)
