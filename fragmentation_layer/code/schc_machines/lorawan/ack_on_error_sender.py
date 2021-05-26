@@ -92,8 +92,8 @@ class AckOnErrorSender(SCHCSender):
                         self.sm.message_to_send.append(SCHCAckReq(
                             self.sm.__rule_id__,
                             self.sm.protocol.id,
-                            self.sm.__cw__,
-                            self.sm.__dtag__
+                            self.sm.__dtag__,
+                            self.sm.__cw__
                         ))
                         break
             else:
@@ -115,8 +115,8 @@ class AckOnErrorSender(SCHCSender):
                 self.sm.message_to_send.append(SCHCAckReq(
                     self.sm.__rule_id__,
                     self.sm.protocol.id,
-                    self.sm.__cw__,
-                    self.sm.__dtag__
+                    self.sm.__dtag__,
+                    self.sm.__cw__
                 ))
                 all1.add_padding()
                 return all1

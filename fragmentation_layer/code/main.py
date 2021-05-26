@@ -3,7 +3,7 @@ import socket
 import binascii
 import struct
 
-from message import SHORT_MESSAGE
+from message import MESSAGE
 from schc_handlers import SCHCNodeHandler
 from schc_protocols import SCHCProtocol
 
@@ -38,5 +38,5 @@ s = socket.socket(socket.AF_LORA, socket.SOCK_RAW)
 s.setsockopt(socket.SOL_LORA, socket.SO_DR, 0)
 
 handler = SCHCNodeHandler(SCHCProtocol.LoRaWAN, 51)
-handler.send_package(SHORT_MESSAGE)
+handler.send_package(MESSAGE)
 handler.start(s)
