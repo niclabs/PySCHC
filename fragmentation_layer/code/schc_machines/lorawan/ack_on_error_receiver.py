@@ -138,13 +138,16 @@ class AckOnErrorReceiver(SCHCReceiver):
                 self.sm.__last_window__ = True
                 last_payload = schc_message.payload.as_bytes()
                 self.sm.payload.add_content(last_payload)
-                self._logger_.debug("Message received:\n" + self.sm.payload.as_bytes().decode("ascii"))
                 rcs = self.sm.protocol.calculate_rcs(
                     self.sm.payload.as_bits()
                 )
                 integrity = rcs == schc_message.header.rcs.rcs
                 if integrity:
                     self._logger_.debug("Integrity check successful")
+                    #self._logger_.debug("Message received:\n" + self.sm.payload.as_bytes().decode("ascii"))
+                    out = open("received.png", "wb")
+                    out.write(self.sm.payload.as_bytes())
+                    out.close()
                     compressed_bitmap = None
                     self.__success__ = True
                 else:
