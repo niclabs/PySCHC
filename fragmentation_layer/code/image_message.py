@@ -1,1 +1,0 @@
-MESSAGE = open("test_img.png", "rb").read()
