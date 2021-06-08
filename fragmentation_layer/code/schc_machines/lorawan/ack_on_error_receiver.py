@@ -138,7 +138,7 @@ class AckOnErrorReceiver(SCHCReceiver):
                 self.sm.__last_window__ = True
                 last_payload = schc_message.payload.as_bytes()
                 self.sm.payload.add_content(last_payload)
-                self._logger_.debug("Message received:\n" + self.sm.payload.as_bytes().decode("ascii"))
+                self.on_success(self.sm.payload.as_bytes())
                 rcs = self.sm.protocol.calculate_rcs(
                     self.sm.payload.as_bits()
                 )
@@ -293,11 +293,12 @@ class AckOnErrorReceiver(SCHCReceiver):
                 pass
             return
 
-    def __init__(self, protocol, dtag=None):
+    def __init__(self, protocol, dtag=None, on_success=None):
         super().__init__(protocol, dtag=dtag)
         self.states["receiving_phase"] = AckOnErrorReceiver.ReceivingPhase(self)
         self.states["waiting_phase"] = AckOnErrorReceiver.WaitingPhase(self)
         self.state = self.states["receiving_phase"]
         self.inactivity_timer.stop()
         self.state.enter_state()
+        self.on_success = on_success
         return

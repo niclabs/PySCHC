@@ -12,8 +12,17 @@ from schc_protocols import LoRaWAN, SCHCProtocol
 
 class SCHCGatewayHandler(SCHCHandler):
 
-    def __init__(self, protocol, mtu):
+    def __init__(self, protocol, mtu, on_receive_callback=None):
         super().__init__(protocol, mtu)
+        if on_receive_callback:
+            def after_reassembly_processing(msg_bytes):
+                # TODO decompress before calling callback
+                on_receive_callback(msg_bytes)
+        else:
+            def after_reassembly_processing(msg_bytes):
+                # TODO decompress before calling callback
+                print("Message received:", msg_bytes)
+        self.callback = after_reassembly_processing
 
     def send_package(self, packet):
         if self.__protocol__.id == SCHCProtocol.LoRaWAN:
@@ -27,7 +36,7 @@ class SCHCGatewayHandler(SCHCHandler):
             if rule_id == LoRaWAN.ACK_ON_ERROR:
                 # message received
                 from schc_machines.lorawan import AckOnErrorReceiver
-                self.assign_session(rule_id, dtag, AckOnErrorReceiver(LoRaWAN(LoRaWAN.ACK_ON_ERROR)))
+                self.assign_session(rule_id, dtag, AckOnErrorReceiver(LoRaWAN(LoRaWAN.ACK_ON_ERROR), on_success=self.callback))
                 self.__sessions__[rule_id][dtag].receive_message(message)
             elif rule_id == LoRaWAN.ACK_ALWAYS:
                 # response received
