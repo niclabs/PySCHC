@@ -138,7 +138,6 @@ class AckOnErrorReceiver(SCHCReceiver):
                 self.sm.__last_window__ = True
                 last_payload = schc_message.payload.as_bytes()
                 self.sm.payload.add_content(last_payload)
-                self.on_success(self.sm.payload.as_bytes())
                 rcs = self.sm.protocol.calculate_rcs(
                     self.sm.payload.as_bits()
                 )
@@ -147,6 +146,7 @@ class AckOnErrorReceiver(SCHCReceiver):
                     self._logger_.debug("Integrity check successful")
                     compressed_bitmap = None
                     self.__success__ = True
+                    self.on_success(self.sm.payload.as_bytes())
                 else:
                     self._logger_.error("Integrity check failed:\tSender: {}\tReceiver:{}".format(
                         schc_message.header.rcs.rcs,
