@@ -3,7 +3,7 @@ import socket
 import binascii
 import struct
 
-from message import MESSAGE
+from message import SHORT_MESSAGE as MESSAGE
 from schc_handlers import SCHCNodeHandler
 from schc_protocols import SCHCProtocol
 

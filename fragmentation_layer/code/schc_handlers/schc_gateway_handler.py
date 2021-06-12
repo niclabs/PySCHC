@@ -15,14 +15,18 @@ class SCHCGatewayHandler(SCHCHandler):
     def __init__(self, protocol, mtu, on_receive_callback=None):
         super().__init__(protocol, mtu)
         if on_receive_callback:
-            def after_reassembly_processing(msg_bytes):
-                # TODO decompress before calling callback
-                on_receive_callback(msg_bytes)
+            used_callback = on_receive_callback
         else:
+            used_callback = lambda msg: print("Message received", msg)
+        
+        def create_after_processing_callback(rule_id, dtag):
             def after_reassembly_processing(msg_bytes):
                 # TODO decompress before calling callback
-                print("Message received:", msg_bytes)
-        self.callback = after_reassembly_processing
+                used_callback(msg_bytes)
+                self.__sessions__[rule_id].pop(dtag)
+            return after_reassembly_processing
+
+        self.callback_creator = create_after_processing_callback
 
     def send_package(self, packet):
         if self.__protocol__.id == SCHCProtocol.LoRaWAN:
@@ -36,7 +40,9 @@ class SCHCGatewayHandler(SCHCHandler):
             if rule_id == LoRaWAN.ACK_ON_ERROR:
                 # message received
                 from schc_machines.lorawan import AckOnErrorReceiver
-                self.assign_session(rule_id, dtag, AckOnErrorReceiver(LoRaWAN(LoRaWAN.ACK_ON_ERROR), on_success=self.callback))
+                self.assign_session(rule_id, dtag, AckOnErrorReceiver(
+                        LoRaWAN(LoRaWAN.ACK_ON_ERROR), 
+                        on_success=self.callback_creator(rule_id, dtag)))
                 self.__sessions__[rule_id][dtag].receive_message(message)
             elif rule_id == LoRaWAN.ACK_ALWAYS:
                 # response received
@@ -64,7 +70,6 @@ class SCHCGatewayHandler(SCHCHandler):
                 "payload_raw": base64.b64encode(response[1:]).decode("utf-8")
             }
             r = requests.post(url, data=json.dumps(post_obj), headers={'content-type': 'application/json'})
-            print(r.status_code)
 
     def generate_message(self, rule_id, dtag, mtu=512):
         message = self.__sessions__[rule_id][dtag].generate_message(mtu)
