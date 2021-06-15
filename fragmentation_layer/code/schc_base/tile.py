@@ -61,3 +61,26 @@ class Tile(SCHCObject):
             Bits sequence as text
         """
         return self.encoded_content
+
+    def __copy__(self):
+        """
+        Copies object
+
+        Returns
+        -------
+        Tile
+            A copy of this tile
+        """
+        out = Tile(self.as_bytes()[0])
+        return out
+
+    def copy(self):
+        """
+        Copies this object
+
+        Returns
+        -------
+        Tile
+            A copy of this tile
+        """
+        return self.__copy__()

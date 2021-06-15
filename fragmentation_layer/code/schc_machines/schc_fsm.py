@@ -196,7 +196,7 @@ class SCHCFiniteStateMachine:
 
         def generate_message(self, mtu):
             """
-            Generates a SCHC message to send
+            Message to send by default: Sends enqueue messages
 
             Parameters
             ----------
@@ -210,10 +210,22 @@ class SCHCFiniteStateMachine:
 
             Raises
             ------
-            GeneratorExit
-                No more SCHC Message to send on current state
+            SystemExit :
+                Raises a SystemExit with error code -1
             """
-            raise GeneratorExit("No more message to send")
+            if len(self.sm.message_to_send) != 0:
+                message = self.sm.message_to_send.pop(0)
+                if (message.size // 8) > mtu:
+                    self.sm.message_to_send.insert(0, message)
+                    self._logger_.warning(
+                        "Cannot send message, no bandwidth available. MTU = {} < Message size = {}".format(
+                            mtu, message.size // 8
+                        )
+                    )
+                self._logger_.schc_message(message)
+                return message
+            else:
+                return None
 
         def receive_message(self, message):
             """
@@ -316,27 +328,6 @@ class SCHCFiniteStateMachine:
             Returns
             -------
             None
-
-            Raises
-            ------
-            SystemExit :
-                Raises a SystemExit with error code -1
-            """
-            raise SystemExit(self.sm.__end_msg__)
-
-        def generate_message(self, mtu):
-            """
-            Generates a SCHC message to send
-
-            Parameters
-            ----------
-            mtu : int
-                Size of MTU available (in bytes)
-
-            Returns
-            -------
-            SCHCMessage:
-                SCHC Message to send
 
             Raises
             ------

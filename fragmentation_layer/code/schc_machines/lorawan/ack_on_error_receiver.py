@@ -3,7 +3,7 @@
 from machine import Timer
 from schc_base import Bitmap
 from schc_machines import SCHCReceiver
-from schc_messages import RegularSCHCFragment, SCHCAck, All1SCHCFragment, SCHCAckReq
+from schc_messages import RegularSCHCFragment, SCHCAck, All1SCHCFragment, SCHCAckReq, SCHCReceiverAbort
 
 
 class AckOnErrorReceiver(SCHCReceiver):
@@ -32,33 +32,13 @@ class AckOnErrorReceiver(SCHCReceiver):
             super().__init__(state_machine)
             self.__success__ = False
 
-        def on_expiration_time(self, alarm):
-            """
-            Executed on expiration time
-
-            Parameters
-            ----------
-            alarm : Timer
-                Timer that triggers expiration
-
-            Returns
-            -------
-            None, alter state to error
-            """
-            self.sm.__exit_msg__ = "Connection timeout"
-            self.sm.state = self.sm.states["error"]
-            self.sm.state.enter_state()
-            return
-
         def generate_message(self, mtu):
             """
             Send messages saved on message_to_send variable
-
             Parameters
             ----------
             mtu : int
                 MTU available
-
             Returns
             -------
             SCHCMessage :
@@ -67,11 +47,30 @@ class AckOnErrorReceiver(SCHCReceiver):
             if self.sm.__last_window__ and self.__success__:
                 self.sm.state = self.sm.states["end"]
                 self.sm.state.enter_state()
-                message = self.sm.message_to_send.pop(0)
-                self._logger_.schc_message(message)
-                return message
+                if len(self.sm.message_to_send) > 0:
+                    message = self.sm.message_to_send.pop(0)
+                    self._logger_.schc_message(message)
+                    return message
+                else:
+                    return None
             else:
                 return None
+
+        def on_expiration_time(self, alarm) -> None:
+            """
+            On expiration time behaviour for this phase
+
+            Parameters
+            ----------
+            alarm : Timer
+                Timer ofg machine that activates the alarm
+
+            Returns
+            -------
+            None
+            """
+            std_on_expiration_time(self, alarm)
+            return
 
         def receive_regular_schc_fragment(self, schc_message):
             """
@@ -85,6 +84,7 @@ class AckOnErrorReceiver(SCHCReceiver):
             -------
             None, alter state
             """
+            self.sm.inactivity_timer.stop()
             if self.sm.__cw__ == schc_message.header.w:
                 fcn = schc_message.header.fcn.fcn
                 self.sm.__fcn__ = fcn
@@ -109,8 +109,10 @@ class AckOnErrorReceiver(SCHCReceiver):
                                       ].generate_compress())
                         ack.add_padding()
                         self.sm.message_to_send.append(ack)
+                        self.sm.attempts.increment()
                         self.sm.state = self.sm.states["waiting_phase"]
                         self.sm.state.enter_state()
+                        self.sm.inactivity_timer.reset()
                         return
                 self._logger_.debug("Current bitmap: {}. Waiting for w={} fcn={} tile".format(
                     self.sm.bitmaps[
@@ -138,23 +140,27 @@ class AckOnErrorReceiver(SCHCReceiver):
                 self.sm.__last_window__ = True
                 last_payload = schc_message.payload.as_bytes()
                 self.sm.payload.add_content(last_payload)
-                rcs = self.sm.protocol.calculate_rcs(
-                    self.sm.payload.as_bits()
-                )
-                integrity = rcs == schc_message.header.rcs.rcs
-                if integrity:
-                    self._logger_.debug("Integrity check successful")
-                    compressed_bitmap = None
-                    self.__success__ = True
-                    self.sm.on_success(self.sm.payload.as_bytes())
+                bitmap = self.sm.bitmaps[schc_message.header.w.w]
+                if bitmap.has_missing():
+                    integrity = False
+                    compressed_bitmap = bitmap.generate_compress()
                 else:
-                    self._logger_.error("Integrity check failed:\tSender: {}\tReceiver:{}".format(
-                        schc_message.header.rcs.rcs,
-                        rcs
-                    ))
-                    compressed_bitmap = self.sm.bitmaps[
-                        self.sm.__cw__
-                    ].generate_compress()
+                    rcs = self.sm.protocol.calculate_rcs(
+                        self.sm.payload.as_bits()
+                    )
+                    integrity = rcs == schc_message.header.rcs.rcs
+                    if integrity:
+                        self._logger_.debug("Integrity check successful")
+                        compressed_bitmap = None
+                        self.__success__ = True
+                        self.sm.on_success(self.sm.payload.as_bytes())
+                    else:
+                        self._logger_.error("Integrity check failed:\tSender: {}\tReceiver:{}".format(
+                            schc_message.header.rcs.rcs,
+                            rcs
+                        ))
+                        compressed_bitmap = bitmap.generate_compress()
+                    return integrity, compressed_bitmap
                 ack = SCHCAck(self.sm.__rule_id__,
                               self.sm.protocol.id,
                               c=integrity,
@@ -165,7 +171,7 @@ class AckOnErrorReceiver(SCHCReceiver):
                 self.sm.message_to_send.append(ack)
                 return
             else:
-                # TODO
+                self._logger_.degug("(All-1) Different window received")
                 return
 
         def receive_schc_ack_req(self, schc_message):
@@ -181,19 +187,26 @@ class AckOnErrorReceiver(SCHCReceiver):
             -------
             None, alter state
             """
-            for w in sorted(self.sm.bitmaps.keys()):
-                bitmap = self.sm.bitmaps[w]
-                if bitmap.is_missing():
-                    self._logger_.debug("Window {} has missing tiles".format(w))
-                    self.sm.message_to_send.append(
-                        SCHCAck(self.sm.__rule_id__, self.sm.protocol.id,
-                                False, w=w, compressed_bitmap=bitmap.generate_compress())
-                    )
+            w = schc_message.header.w.w
+            if self.sm.__cw__ == w:
+                try:
+                    bitmap = self.sm.bitmaps[w]
+                except KeyError:
+                    self._logger_.warning("W is not valid: w received: {}".format(w))
                     return
-            bitmap = self.sm.bitmaps[self.sm.__cw__]
+            elif self.sm.__cw__ > w:
+                self._logger_.warning(
+                    "SCHCAckReq is for a completed window (current w={} > {}). Discarding message".format(
+                        self.sm.__cw__, w))
+                return
+            else:  # self.sm.__cw__ < w:
+                self._logger_.warning("Incorrect window, discarding")
+                return
+            if bitmap.is_missing():
+                self._logger_.debug("Window {} has missing tiles".format(w))
             self.sm.message_to_send.append(
                 SCHCAck(self.sm.__rule_id__, self.sm.protocol.id,
-                        False, w=self.sm.__cw__, compressed_bitmap=bitmap.generate_compress())
+                        False, w=w, compressed_bitmap=bitmap.generate_compress())
             )
             return
 
@@ -216,19 +229,7 @@ class AckOnErrorReceiver(SCHCReceiver):
             SCHCMessage :
                 Message to send
             """
-            if len(self.sm.message_to_send) != 0:
-                message = self.sm.message_to_send.pop(0)
-                if (message.size // 8) > mtu:
-                    self.sm.message_to_send.insert(0, message)
-                    self._logger_.warning(
-                        "Cannot send message, no bandwidth available. MTU = {} < Message size = {}".format(
-                            mtu, message.size // 8
-                        )
-                    )
-                self._logger_.schc_message(message)
-                return message
-            else:
-                return None
+            return super().generate_message(mtu)
 
         def receive_regular_schc_fragment(self, schc_message):
             """
@@ -265,7 +266,35 @@ class AckOnErrorReceiver(SCHCReceiver):
                     if self.sm.bitmaps[self.sm.__cw__].is_missing():
                         fcn = self.sm.bitmaps[self.sm.__cw__].get_missing(fcn=True)
                     else:
-                        break
+                        ack = SCHCAck(
+                            rule_id=self.sm.__rule_id__,
+                            protocol=self.sm.protocol.id,
+                            c=False,
+                            dtag=self.sm.__dtag__,
+                            w=self.sm.__cw__,
+                            compressed_bitmap=self.sm.bitmaps[self.sm.__cw__].generate_compress()
+                        )
+                        ack.add_padding()
+                        self.sm.message_to_send.append(ack)
+                        return
+            return
+
+        def receive_all1_schc_fragment(self, schc_message):
+            """
+            Behaviour when receiving All-1 SCHC Fragment
+
+            Parameters
+            ----------
+            schc_message : All1SCHCFragment
+                Last fragment to be received
+
+            Returns
+            -------
+            None, alter state
+            """
+            self.sm.state = self.sm.states["receiving_phase"]
+            self.sm.state.enter_state()
+            self.sm.state.receive_all1_schc_fragment(schc_message)
             return
 
         def receive_schc_ack_req(self, schc_message):
@@ -289,8 +318,25 @@ class AckOnErrorReceiver(SCHCReceiver):
                     SCHCAck(self.sm.__rule_id__, self.sm.protocol.id,
                             c=False, w=w, compressed_bitmap=self.sm.bitmaps[w].generate_compress())
                 )
+                self.sm.attempts.increment()
             else:
                 pass
+            return
+
+        def on_expiration_time(self, alarm) -> None:
+            """
+            On expiration time behaviour for this phase
+
+            Parameters
+            ----------
+            alarm : Timer
+                Timer of machine that activates the alarm
+
+            Returns
+            -------
+            None
+            """
+            std_on_expiration_time(self, alarm)
             return
 
     def __init__(self, protocol, dtag=None, on_success=None):
@@ -298,7 +344,35 @@ class AckOnErrorReceiver(SCHCReceiver):
         self.states["receiving_phase"] = AckOnErrorReceiver.ReceivingPhase(self)
         self.states["waiting_phase"] = AckOnErrorReceiver.WaitingPhase(self)
         self.state = self.states["receiving_phase"]
-        self.inactivity_timer.stop()
+        self.inactivity_timer.reset()
         self.state.enter_state()
         self.on_success = on_success
         return
+
+
+def std_on_expiration_time(state, alarm):
+    """
+    Standard expiration time (for both phases)
+
+    Parameters
+    ----------
+    state : SCHCReceiver.ReceiverState
+        State which Inactivity timer expired
+    alarm : Timer
+       Timer of machine that activates the alarm
+
+    Returns
+    -------
+    None
+    """
+    state.sm.state = state.sm.states["error"]
+    state.sm.state.enter_state()
+    state.sm.message_to_send.append(
+        SCHCReceiverAbort(
+            rule_id=state.sm.__rule_id__,
+            protocol=state.sm.protocol.id,
+            dtag=state.sm.__dtag__,
+            w=state.sm.__cw__
+        )
+    )
+    return

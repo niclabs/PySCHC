@@ -8,7 +8,7 @@ from schc_machines import SCHCFiniteStateMachine
 HOST = "127.0.0.1"
 MTU = 50
 SEED = 8
-PROBABILITY_OF_FAILURE = 0.05
+PROBABILITY_OF_FAILURE = 0.0
 
 random.seed(SEED)
 
@@ -100,6 +100,7 @@ def messaging_loop(machine: SCHCFiniteStateMachine, socket_rx: socket.socket, se
         lost = is_this_loss()
         try:
             print("Sending...")
+            print("Messages enqueued: {}".format(machine.message_to_send))
             message = machine.generate_message(mtu)
             logging.info("Current mtu: {}".format(mtu))
             logging.info("Package sent: {}".format(not lost))

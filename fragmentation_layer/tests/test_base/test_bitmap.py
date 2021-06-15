@@ -72,6 +72,25 @@ class TestBitmap(TestCase):
             ]) % protocol_to_use.L2_WORD) + protocol_to_use.L2_WORD - 1,
             sum(compressed_bitmap), "Wrong compression")
 
+    def test_has_missing(self):
+        protocol = LoRaWAN(LoRaWAN.ACK_ON_ERROR)
+        bitmap = Bitmap(protocol)
+        self.assertFalse(bitmap.has_missing(), "Bitmap full False has missing")
+        bitmap.tile_received(protocol.WINDOW_SIZE - 1)
+        self.assertFalse(bitmap.has_missing(), "Bitmap first one has missing")
+        for i in range(5):
+            bitmap.tile_received(protocol.WINDOW_SIZE - (i + 2))
+        self.assertFalse(bitmap.has_missing(), "Bitmap first ones has missing")
+        for i in range(5):
+            bitmap.tile_received(protocol.WINDOW_SIZE - (i + 10))
+        self.assertTrue(bitmap.has_missing(), "Bitmap has missing not reported")
+        for i in range(5):
+            bitmap.tile_received(protocol.WINDOW_SIZE - (i + 20))
+        self.assertTrue(bitmap.has_missing(), "Bitmap has missing not reported (second case)")
+        for i in range(protocol.WINDOW_SIZE):
+            bitmap.tile_received(protocol.WINDOW_SIZE - (i + 1))
+        self.assertFalse(bitmap.has_missing(), "Bitmap full True has missing")
+
 
 if __name__ == '__main__':
     main()
