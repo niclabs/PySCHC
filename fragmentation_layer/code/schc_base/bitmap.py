@@ -98,10 +98,25 @@ class Bitmap:
 
         Returns
         -------
-        bool :
+        bool
             True if there are missing tiles
         """
         return len(self.__bitmap__) > sum(self.__bitmap__)
+
+    def has_missing(self):
+        """
+        Whether is a missing value so far
+
+        Returns
+        -------
+        bool
+            True if there are missing tiles between ones
+        """
+        i = 0
+        for i, bit in enumerate(self.__bitmap__):
+            if not bit:
+                break
+        return 0 < sum(self.__bitmap__[i+1:])
 
     def get_missing(self, fcn=False):
         """
@@ -115,7 +130,7 @@ class Bitmap:
 
         Returns
         -------
-        int :
+        int
             First index with missing tile
         """
         i = self.__bitmap__.index(False)
@@ -123,6 +138,17 @@ class Bitmap:
             return self.protocol.WINDOW_SIZE - 1 - i
         else:
             return i
+
+    def get_received_tiles(self):
+        """
+        Gets number of received tiles
+
+        Returns
+        -------
+        int
+            Tiles received and reported
+        """
+        return sum(self.__bitmap__)
 
     def __repr__(self):
         return "".join(["1" if i else "0" for i in self.__bitmap__])
