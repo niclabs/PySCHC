@@ -2,6 +2,7 @@
 
 from schc_base import SCHCObject
 from schc_protocols import SCHCProtocol, get_protocol
+from schc_compression import SCHC_Compressor, SCHC_Decompressor, SCHC_RuleManager
 
 
 # TODO: 
@@ -11,6 +12,10 @@ class SCHCHandler:
         self.__protocol__ = get_protocol(protocol)
         self.__sessions__ = dict()
         self.__mtu__ = mtu
+        rm = SCHC_RuleManager()
+        # TODO: add rules
+        self.__compressor__ = SCHC_Compressor(rm)
+        self.__decompressor__ = SCHC_Decompressor(rm)
 
     def identify_session_from_message(self, message, f_port=None):
         if self.__protocol__.id == SCHCProtocol.LoRaWAN:

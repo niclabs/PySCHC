@@ -12,7 +12,8 @@ class SCHCNodeHandler(SCHCHandler):
     def send_package(self, packet):
         if self.__protocol__.id == SCHCProtocol.LoRaWAN:
             from schc_machines.lorawan import AckOnErrorSender
-            self.assign_session(LoRaWAN.ACK_ON_ERROR, None, AckOnErrorSender(LoRaWAN(LoRaWAN.ACK_ON_ERROR), packet))
+            compressed_packet = self.__compressor__.compress(packet, "Up")
+            self.assign_session(LoRaWAN.ACK_ON_ERROR, None, AckOnErrorSender(LoRaWAN(LoRaWAN.ACK_ON_ERROR), compressed_packet))
         else:
             raise NotImplementedError("Just LoRaWAN implemented")
 
