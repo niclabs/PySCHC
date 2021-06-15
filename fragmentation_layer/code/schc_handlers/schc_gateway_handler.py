@@ -23,7 +23,7 @@ class SCHCGatewayHandler(SCHCHandler):
             def after_reassembly_processing(msg_bytes):
                 # TODO decompress before calling callback
                 used_callback(msg_bytes)
-                # self.__sessions__[rule_id].pop(dtag)
+                self.__sessions__[rule_id].pop(dtag)
             return after_reassembly_processing
 
         self.callback_creator = create_after_processing_callback
