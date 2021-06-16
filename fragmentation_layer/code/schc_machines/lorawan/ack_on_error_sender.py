@@ -43,6 +43,7 @@ class AckOnErrorSender(SCHCSender):
             self._logger_.debug("{} tiles generated".format(len(sm.tiles)))
             self.sm.state = self.sm.states["sending_phase"]
             self.sm.state.enter_state()
+            self.sm.message_to_send.clear()
             return
 
     class SendingPhase(SCHCSender.SenderState):
@@ -184,6 +185,7 @@ class AckOnErrorSender(SCHCSender):
                 self.sm.__cw__ = schc_message.header.w.w
                 self.sm.state = self.sm.states["resending_phase"]
                 self.sm.state.enter_state()
+                self.sm.message_to_send.clear()
                 return
             else:  # self.sm.__cw__ == schc_message.header.w.w:
                 if schc_message.header.c.c:
@@ -213,6 +215,7 @@ class AckOnErrorSender(SCHCSender):
                             self.sm.retransmission_timer.stop()
                             self.sm.state = self.sm.states["resending_phase"]
                             self.sm.state.enter_state()
+                            self.sm.message_to_send.clear()
                             return
                         else:
                             self.sm.state = self.sm.states["error"]
@@ -230,6 +233,7 @@ class AckOnErrorSender(SCHCSender):
                             self.sm.state = self.sm.states["resending_phase"]
                             self.sm.retransmission_timer.stop()
                             self.sm.state.enter_state()
+                            self.sm.message_to_send.clear()
                             return
                         else:
                             self.sm.sent_tiles.clear()
@@ -238,6 +242,7 @@ class AckOnErrorSender(SCHCSender):
                             self.sm.__cw__ += 1
                             self.sm.__fcn__ = self.sm.protocol.WINDOW_SIZE - 1
                             self.sm.state.enter_state()
+                            self.sm.message_to_send.clear()
                             return
 
         def on_expiration_time(self, alarm):

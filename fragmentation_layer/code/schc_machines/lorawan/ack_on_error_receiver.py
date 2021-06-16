@@ -54,7 +54,15 @@ class AckOnErrorReceiver(SCHCReceiver):
                     self._logger_.schc_message(message)
                     return message
                 else:
-                    return None
+                    ack = SCHCAck(
+                        rule_id=self.sm.__rule_id__,
+                        protocol=self.sm.protocol.id,
+                        c=True,
+                        dtag=self.sm.__dtag__,
+                        w=self.sm.__cw__
+                    )
+                    ack.add_padding()
+                    return ack
             else:
                 return None
 
