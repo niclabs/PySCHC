@@ -35,5 +35,5 @@ class SCHCHandler:
     def assign_session(self, rule_id, dtag, machine):
         if rule_id not in self.__sessions__.keys():
             self.__sessions__[rule_id] = dict()
-        if dtag not in self.__sessions__[rule_id].keys():
+        if dtag not in self.__sessions__[rule_id].keys() or self.__sessions__[rule_id][dtag].is_active() == False:
             self.__sessions__[rule_id][dtag] = machine

@@ -450,3 +450,6 @@ class SCHCFiniteStateMachine:
         """
         self.state.on_expiration_time(alarm)
         return
+
+    def is_active(self):
+        return self.__active__
