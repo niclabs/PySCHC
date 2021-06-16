@@ -69,8 +69,8 @@ class LoRaWAN(SCHCProtocol):
             self.WINDOW_SIZE = 63  # 2^(n=6) = 64 - {All-1 fragment}
             self.TILE_SIZE = 10 * 8  # 10 bytes = 80 bits
             self.MAX_ACK_REQUEST = 1e6  # TODO
-            self.INACTIVITY_TIMER = 10  # in seconds TODO
-            self.RETRANSMISSION_TIMER = 10  # in seconds TODO
+            self.INACTIVITY_TIMER = 30  # in seconds TODO
+            self.RETRANSMISSION_TIMER = 5  # in seconds TODO
         elif self.RULE_ID == LoRaWAN.ACK_ALWAYS:  # Downlink data transfer
             self.T = 0  # in bits
             self.M = 1  # in bits
