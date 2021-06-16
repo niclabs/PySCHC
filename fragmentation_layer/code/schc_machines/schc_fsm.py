@@ -345,6 +345,22 @@ class SCHCFiniteStateMachine:
             """
             raise SystemExit(self.sm.__end_msg__)
 
+        def on_expiration_time(self, alarm) -> None:
+            """
+            Behaviour on time expiration
+
+            Parameters
+            ----------
+            alarm : Timer
+                Alarm that triggers expiration
+
+            Returns
+            -------
+            None
+            """
+            self.sm.__active__ = False
+            return
+
     def __init__(self, protocol, dtag=None):
         """
         Constructor
@@ -378,6 +394,7 @@ class SCHCFiniteStateMachine:
         self.__exit_msg__ = ""
         self.__end_msg__ = ""
         self.message_to_send = list()
+        self.__active__ = True
         return
 
     def receive_message(self, message):

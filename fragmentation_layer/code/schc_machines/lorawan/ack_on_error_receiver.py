@@ -67,6 +67,7 @@ class AckOnErrorReceiver(SCHCReceiver):
             if self.sm.__last_window__ and self.__success__:
                 self.sm.state = self.sm.states["end"]
                 self.sm.state.enter_state()
+                self.sm.inactivity_timer.reset()
                 message = self.sm.message_to_send.pop(0)
                 self._logger_.schc_message(message)
                 self.sm.on_success(self.sm.payload.as_bytes())
