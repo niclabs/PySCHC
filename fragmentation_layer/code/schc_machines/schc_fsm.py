@@ -336,6 +336,43 @@ class SCHCFiniteStateMachine:
             """
             raise SystemExit(self.sm.__end_msg__)
 
+        def generate_message(self, mtu):
+            """
+            Generates a SCHC message to send
+
+            Parameters
+            ----------
+            mtu : int
+                Size of MTU available (in bytes)
+
+            Returns
+            -------
+            SCHCMessage:
+                SCHC Message to send
+
+            Raises
+            ------
+            SystemExit :
+                Raises a SystemExit with error code -1
+            """
+            raise SystemExit(self.sm.__end_msg__)
+
+        def on_expiration_time(self, alarm) -> None:
+            """
+            Behaviour on time expiration
+
+            Parameters
+            ----------
+            alarm : Timer
+                Alarm that triggers expiration
+
+            Returns
+            -------
+            None
+            """
+            self.sm.__active__ = False
+            return
+
     def __init__(self, protocol, dtag=None):
         """
         Constructor
@@ -369,6 +406,7 @@ class SCHCFiniteStateMachine:
         self.__exit_msg__ = ""
         self.__end_msg__ = ""
         self.message_to_send = list()
+        self.__active__ = True
         return
 
     def receive_message(self, message):
@@ -424,3 +462,6 @@ class SCHCFiniteStateMachine:
         """
         self.state.on_expiration_time(alarm)
         return
+
+    def is_active(self):
+        return self.__active__
