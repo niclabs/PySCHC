@@ -8,7 +8,7 @@ from schc_messages import RegularSCHCFragment, All1SCHCFragment, SCHCAck, SCHCAc
 class AckOnErrorSender(SCHCSender):
     """
     AckOnError Sender State Machine with Ack-on-Error Mode
-    
+
     Attributes
     ----------
     protocol
@@ -99,26 +99,8 @@ class AckOnErrorSender(SCHCSender):
             else:
                 last_tile = self.sm.tiles.pop(0)
                 self.sm.sent_tiles[self.sm.__fcn__] = last_tile.copy()
-                self.sm.__last_window__ = True
-                all1 = All1SCHCFragment(
-                    rule_id=self.sm.__rule_id__,
-                    protocol=self.sm.protocol.id,
-                    dtag=self.sm.__dtag__,
-                    w=self.sm.__cw__,
-                    rcs=self.sm.rcs
-                )
-                all1.add_tile(last_tile)
+                all1 = send_all1(self, last_tile)
                 self._logger_.schc_message(all1)
-                self.sm.state = self.sm.states["waiting_phase"]
-                self.sm.state.enter_state()
-                self.sm.retransmission_timer.reset()
-                self.sm.message_to_send.append(SCHCAckReq(
-                    self.sm.__rule_id__,
-                    self.sm.protocol.id,
-                    self.sm.__dtag__,
-                    self.sm.__cw__
-                ))
-                all1.add_padding()
                 return all1
             regular_message.add_padding()
             self._logger_.schc_message(regular_message)
@@ -160,6 +142,7 @@ class AckOnErrorSender(SCHCSender):
             if len(self.sm.message_to_send) != 0:
                 if self.sm.message_to_send[0].size - self.sm.protocol.FPORT_LENGTH <= mtu * 8:
                     message = self.sm.message_to_send.pop(0)
+                    self._logger_.schc_message(message)
                     return message
             else:
                 return None
@@ -211,7 +194,7 @@ class AckOnErrorSender(SCHCSender):
                     self._logger_.debug("Received bitmap: {}".format(bitmap))
                     self.sm.bitmaps[schc_message.header.w.w] = bitmap
                     if self.sm.__last_window__:
-                        if bitmap.has_missing() or bitmap.get_received_tiles() < self.sm.sent_tiles:
+                        if bitmap.has_missing() or bitmap.get_received_tiles() < len(self.sm.sent_tiles):
                             self.sm.retransmission_timer.stop()
                             self.sm.state = self.sm.states["resending_phase"]
                             self.sm.state.enter_state()
@@ -280,6 +263,7 @@ class AckOnErrorSender(SCHCSender):
                 ack_req.add_padding()
                 self.sm.message_to_send.append(ack_req)
                 self.sm.attempts.increment()
+                self.sm.retransmission_timer.reset()
                 return
 
     class ResendingPhase(SCHCSender.SenderState):
@@ -319,25 +303,8 @@ class AckOnErrorSender(SCHCSender):
             # MTU should not count FPort
             mtu_available += regular_message.header.rule_id.size
             if 0 < last_tile == the_fcn:
-                all1 = All1SCHCFragment(
-                    rule_id=self.sm.__rule_id__,
-                    protocol=self.sm.protocol.id,
-                    dtag=self.sm.__dtag__,
-                    w=self.sm.__cw__,
-                    rcs=self.sm.rcs
-                )
-                all1.add_tile(self.sm.sent_tiles[last_tile])
+                all1 = send_all1(self, self.sm.sent_tiles[last_tile])
                 self._logger_.schc_message(all1)
-                self.sm.state = self.sm.states["waiting_phase"]
-                self.sm.state.enter_state()
-                self.sm.retransmission_timer.reset()
-                self.sm.message_to_send.append(SCHCAckReq(
-                    self.sm.__rule_id__,
-                    self.sm.protocol.id,
-                    self.sm.__dtag__,
-                    self.sm.__cw__
-                ))
-                all1.add_padding()
                 return all1
             if the_fcn < last_tile:
                 self.sm.state = self.sm.states["waiting_phase"]
@@ -388,3 +355,43 @@ class AckOnErrorSender(SCHCSender):
         self.sent_tiles = dict()
         self.state.__generate_tiles__()
         return
+
+
+def send_all1(state, last_tile):
+    """
+    Sends All1SCHCFragment
+
+    Parameters
+    ----------
+    state : AckOnErrorSender.SenderState
+        State to send all-1 from
+    last_tile : Tile
+        Last tile to send
+
+    Returns
+    -------
+    All1SCHCFragment
+         Fragment to send
+    """
+    state.sm.__last_window__ = True
+    all1 = All1SCHCFragment(
+        rule_id=state.sm.__rule_id__,
+        protocol=state.sm.protocol.id,
+        dtag=state.sm.__dtag__,
+        w=state.sm.__cw__,
+        rcs=state.sm.rcs
+    )
+    all1.add_tile(last_tile)
+    state.sm.state = state.sm.states["waiting_phase"]
+    state.sm.state.enter_state()
+    state.sm.retransmission_timer.reset()
+    ack_req = SCHCAckReq(
+        rule_id=state.sm.__rule_id__,
+        protocol=state.sm.protocol.id,
+        dtag=state.sm.__dtag__,
+        w=state.sm.__cw__
+    )
+    ack_req.add_padding()
+    state.sm.message_to_send.append(ack_req)
+    all1.add_padding()
+    return all1

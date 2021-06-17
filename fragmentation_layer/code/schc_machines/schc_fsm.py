@@ -1,5 +1,6 @@
 """ schc_fsm: SCHC Finite State Machine Abstract Class """
 
+import datetime
 from machine import Timer
 from schc_base import AttemptsCounter, Bitmap
 from schc_messages import SCHCMessage
@@ -8,7 +9,7 @@ from schc_protocols import SCHCProtocol
 
 class SCHCFiniteStateMachine:
     """
-    Finite State Machine of Sender/Receiver (Fragmenter/Ensembler)
+    Finite State Machine of Sender/Receiver (Fragmenter/Reassembler)
     behaviours
 
     Attributes
@@ -61,15 +62,19 @@ class SCHCFiniteStateMachine:
             """
             SCHC Logger to log SCHC Fragmentation
             """
-            def __init__(self, state) -> None:
+            TAG = "{mode}::[{datetime}]::"
+
+            def __init__(self, state):
                 self.__state__ = state
                 return
 
-            def __log__(self, mode) -> None:
-                mode("SCHC Fragment on '{}' mode, {} on '{}' state".format(
-                    self.__state__.sm.__mode__,
-                    self.__state__.sm.__type__,
-                    self.__state__.__name__
+            def __log__(self, mode):
+                print(
+                    self.TAG.format(mode=mode, datetime=datetime.datetime.now()) +
+                    "SCHC Fragment on '{}' mode, {} on '{}' state".format(
+                        self.__state__.sm.__mode__,
+                        self.__state__.sm.__type__,
+                        self.__state__.__name__
                 ))
                 second_line = "\tProtocol: {}, Rule ID: {}".format(
                     self.__state__.sm.protocol.__name__,
@@ -79,7 +84,7 @@ class SCHCFiniteStateMachine:
                     second_line += ", DTag: {}".format(
                         self.__state__.sm.__dtag__
                     )
-                mode(second_line)
+                print(second_line)
                 return
 
             def enter_state(self):
@@ -90,7 +95,7 @@ class SCHCFiniteStateMachine:
                 -------
                 None
                 """
-                self.__log__(print)
+                self.__log__("DEBUG")
                 return
 
             def schc_message(self, message):
@@ -123,7 +128,7 @@ class SCHCFiniteStateMachine:
                 -------
                 None
                 """
-                self.__log__(print)
+                self.__log__("ERROR")
                 print("\t{}".format(message))
                 return
 
@@ -140,7 +145,7 @@ class SCHCFiniteStateMachine:
                 -------
                 None
                 """
-                self.__log__(print)
+                self.__log__("WARNING")
                 print("\t{}".format(message))
                 return
 
@@ -157,7 +162,7 @@ class SCHCFiniteStateMachine:
                 -------
                 None
                 """
-                self.__log__(print)
+                self.__log__("DEBUG")
                 print("\t{}".format(message))
                 return
 
@@ -174,7 +179,7 @@ class SCHCFiniteStateMachine:
                 -------
                 None
                 """
-                self.__log__(print)
+                self.__log__("INFO")
                 print("\t{}".format(message))
                 return
 
