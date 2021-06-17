@@ -138,6 +138,41 @@ class SCHCReceiver(SCHCFiniteStateMachine):
     def __init__(self, protocol, dtag=None):
         super().__init__(protocol, dtag=dtag)
         self.payload = SCHCPayload()
+        self.__payload__ = dict()
         self.inactivity_timer = SCHCTimer(self.on_expiration_time, protocol.INACTIVITY_TIMER)
         self.__end_msg__ = "Message received and resembled"
+        return
+
+    def add_tile(self, tile, w, fcn):
+        """
+        Adds tile to future payload
+        Parameters
+        ----------
+        tile : Tile
+            The tile to add
+        w : int
+            Window of tile
+        fcn : int
+            FCN of tile
+
+        Returns
+        -------
+        None
+        """
+        if w not in self.__payload__.keys():
+            self.__payload__[w] = dict()
+        self.__payload__[w][fcn] = tile.copy()
+        return
+
+    def reassemble(self):
+        """
+        Reassembles payload and saved on payload
+
+        Returns
+        -------
+        None
+        """
+        for w in sorted(self.__payload__.keys()):
+            for fcn in reversed(sorted(self.__payload__[w].keys())):
+                self.payload.add_content(self.__payload__[w][fcn].as_bits())
         return

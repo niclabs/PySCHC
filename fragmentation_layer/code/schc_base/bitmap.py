@@ -118,7 +118,7 @@ class Bitmap:
                 break
         return 0 < sum(self.__bitmap__[i+1:])
 
-    def get_missing(self, fcn=False):
+    def get_missing(self, fcn=False, after=None):
         """
         Gets first index of reported missing tile. If fcn is True, passes
         as fcn
@@ -127,13 +127,22 @@ class Bitmap:
         ----------
         fcn : bool, optional
             If fcn is True, missing as fcn
+        after : int, optional
+            Check after a particular fcn
 
         Returns
         -------
         int
             First index with missing tile
         """
-        i = self.__bitmap__.index(False)
+        if after is None:
+            i = self.__bitmap__.index(False)
+        else:
+            if fcn:
+                i = self.__bitmap__[self.protocol.WINDOW_SIZE - after:].index(False)
+                return after - 1 - i
+            else:
+                i = self.__bitmap__[after + 1:].index(False) + after + 1
         if fcn:
             return self.protocol.WINDOW_SIZE - 1 - i
         else:
