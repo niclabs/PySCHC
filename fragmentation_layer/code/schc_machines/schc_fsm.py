@@ -1,6 +1,14 @@
 """ schc_fsm: SCHC Finite State Machine Abstract Class """
 
-import datetime
+import sys
+
+if sys.implementation.name == "micropython":
+    import time
+    now = time.time
+else:
+    import datetime
+    now = datetime.datetime.now
+
 from machine import Timer
 from schc_base import AttemptsCounter, Bitmap
 from schc_messages import SCHCMessage
@@ -70,7 +78,7 @@ class SCHCFiniteStateMachine:
 
             def __log__(self, mode):
                 print(
-                    self.TAG.format(mode=mode, datetime=datetime.datetime.now()) +
+                    self.TAG.format(mode=mode, datetime=now()) +
                     "SCHC Fragment on '{}' mode, {} on '{}' state".format(
                         self.__state__.sm.__mode__,
                         self.__state__.sm.__type__,

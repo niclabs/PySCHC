@@ -39,12 +39,7 @@ s = socket.socket(socket.AF_LORA, socket.SOCK_RAW)
 s.setsockopt(socket.SOL_LORA, socket.SO_DR, 0)
 
 handler = SCHCNodeHandler(SCHCProtocol.LoRaWAN, 51)
-# first message
-handler.send_package(MESSAGE)
-handler.start(s)
 
-time.sleep(20)
-
-# second message
+# send message
 handler.send_package(MESSAGE)
 handler.start(s)
