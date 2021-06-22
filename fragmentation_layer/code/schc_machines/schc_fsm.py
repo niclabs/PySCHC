@@ -11,7 +11,6 @@ else:
     now = datetime.datetime.now
     from lopy_machine import Timer
 
-from machine import Timer
 from schc_base import AttemptsCounter, Bitmap
 from schc_messages import SCHCMessage
 from schc_protocols import SCHCProtocol
