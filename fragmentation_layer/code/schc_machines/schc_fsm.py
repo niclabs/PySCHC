@@ -5,9 +5,11 @@ import sys
 if sys.implementation.name == "micropython":
     import time
     now = time.time
+    from machine import Timer
 else:
     import datetime
     now = datetime.datetime.now
+    from lopy_machine import Timer
 
 from machine import Timer
 from schc_base import AttemptsCounter, Bitmap
