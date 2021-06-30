@@ -1,4 +1,4 @@
-
+MESSAGE = """
 Abstract
 
    The Static Context Header Compression (SCHC) specification describes
@@ -42,3 +42,5 @@ Copyright Notice
    include Simplified BSD License text as described in Section 4.e of
    the Trust Legal Provisions and are provided without warranty as
    described in the Simplified BSD License.
+""".encode("ascii")
+SHORT_MESSAGE = "Copyright (c) 2021 IETF Trust and the persons identified as the document authors.".encode("ascii")

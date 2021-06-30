@@ -4,15 +4,17 @@ from schc_base import SCHCObject
 from schc_protocols import SCHCProtocol, get_protocol
 
 
+# TODO: 
 class SCHCHandler:
 
-    def __init__(self, protocol):
+    def __init__(self, protocol, mtu):
         self.__protocol__ = get_protocol(protocol)
         self.__sessions__ = dict()
+        self.__mtu__ = mtu
 
     def identify_session_from_message(self, message, f_port=None):
         if self.__protocol__.id == SCHCProtocol.LoRaWAN:
-            rule_id = int.from_bytes(f_port, "big")
+            rule_id = f_port
         else:
             raise NotImplementedError("Just LoRaWAN implemented")
         protocol = get_protocol(self.__protocol__.id)
@@ -24,17 +26,14 @@ class SCHCHandler:
             dtag = int(dtag, 2)
         return rule_id, dtag
 
-    def send_package(self, rule_id, packet, dtag=None):
+    def send_package(self, packet):
         return
 
-    def receive(self, rule_id, dtag, message, f_port=None):
+    def receive(self, rule_id, dtag, message):
         return
-
-    def generate_message(self, rule_id, dtag, mtu=512):
-        raise GeneratorExit("Abstract class cannot generate message")
 
     def assign_session(self, rule_id, dtag, machine):
         if rule_id not in self.__sessions__.keys():
             self.__sessions__[rule_id] = dict()
-        if dtag not in self.__sessions__[rule_id].keys():
+        if dtag not in self.__sessions__[rule_id].keys() or self.__sessions__[rule_id][dtag].is_active() == False:
             self.__sessions__[rule_id][dtag] = machine

@@ -57,20 +57,18 @@ Copyright Notice
 RESIDUE = "0101100"
 
 socket_rx = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+socket_rx.settimeout(1)
 socket_rx.bind((HOST, RECEIVER_PORT))
 socket_rx.listen(1)
 
 
 if __name__ == '__main__':
-    logging.basicConfig(level=logging.DEBUG)
-
     from schc_machines.lorawan import AckOnErrorSender
     from schc_protocols import LoRaWAN
 
     sender = AckOnErrorSender(
         LoRaWAN(LoRaWAN.ACK_ON_ERROR),
-        MESSAGE,
-        RESIDUE
+        MESSAGE
     )
 
     messaging_loop(sender, socket_rx, SENDER_PORT)

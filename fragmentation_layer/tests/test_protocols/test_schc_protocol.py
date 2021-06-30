@@ -1,4 +1,14 @@
+""" test_schc_protocol: SCHC Protocol unit test class """
 
+from binascii import crc32
+from random import seed, choices, choice
+from unittest import TestCase, main
+from schc_base import SCHCObject
+from schc_protocols import LoRaWAN
+
+SEED = 7
+SHORT_MESSAGE = "This is a short message".encode("ascii")
+LONG_MESSAGE = """
 Abstract
 
    The Static Context Header Compression (SCHC) specification describes
@@ -42,3 +52,37 @@ Copyright Notice
    include Simplified BSD License text as described in Section 4.e of
    the Trust Legal Provisions and are provided without warranty as
    described in the Simplified BSD License.
+""".encode("ascii")
+WORD_LENGTHS = [10, 200, int(1e3)]
+
+
+class TestSCHCProtocol(TestCase):
+
+    def test_crc32_static_message(self) -> None:
+        short = SCHCObject.bytes_2_bits(SHORT_MESSAGE)
+        library = hex(crc32(SCHCObject.bits_2_bytes(short)))
+        local = LoRaWAN().calculate_rcs(short)
+        self.assertEqual(library, local, "Short message crc32 do not match")
+        long = SCHCObject.bytes_2_bits(LONG_MESSAGE)
+        library = hex(crc32(SCHCObject.bits_2_bytes(long)))
+        local = LoRaWAN().calculate_rcs(long)
+        self.assertEqual(library, local, "Long message crc32 do not match")
+
+    def test_crc32_random(self) -> None:
+        seed(SEED)
+        import string
+        for _ in range(100):
+            a_word = "".join(
+                choices(string.ascii_letters, k=choice(WORD_LENGTHS))
+            ).encode("ascii")
+            word = SCHCObject.bytes_2_bits(a_word)
+            library = hex(crc32(SCHCObject.bits_2_bytes(word)))
+            local = LoRaWAN().calculate_rcs(word)
+            self.assertEqual(
+                library, local,
+                "Random message {} crc32 do not match".format(a_word)
+            )
+
+
+if __name__ == '__main__':
+    main()

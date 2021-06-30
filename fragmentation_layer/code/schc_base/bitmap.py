@@ -1,7 +1,5 @@
 """ bitmap: Bitmap class """
 
-from schc_protocols import SCHCProtocol
-
 
 class Bitmap:
     """
@@ -100,12 +98,27 @@ class Bitmap:
 
         Returns
         -------
-        bool :
+        bool
             True if there are missing tiles
         """
         return len(self.__bitmap__) > sum(self.__bitmap__)
 
-    def get_missing(self, fcn=False):
+    def has_missing(self):
+        """
+        Whether is a missing value so far
+
+        Returns
+        -------
+        bool
+            True if there are missing tiles between ones
+        """
+        i = 0
+        for i, bit in enumerate(self.__bitmap__):
+            if not bit:
+                break
+        return 0 < sum(self.__bitmap__[i+1:])
+
+    def get_missing(self, fcn=False, after=None):
         """
         Gets first index of reported missing tile. If fcn is True, passes
         as fcn
@@ -114,17 +127,37 @@ class Bitmap:
         ----------
         fcn : bool, optional
             If fcn is True, missing as fcn
+        after : int, optional
+            Check after a particular fcn
 
         Returns
         -------
-        int :
+        int
             First index with missing tile
         """
-        i = self.__bitmap__.index(False)
+        if after is None:
+            i = self.__bitmap__.index(False)
+        else:
+            if fcn:
+                i = self.__bitmap__[self.protocol.WINDOW_SIZE - after:].index(False)
+                return after - 1 - i
+            else:
+                i = self.__bitmap__[after + 1:].index(False) + after + 1
         if fcn:
             return self.protocol.WINDOW_SIZE - 1 - i
         else:
             return i
+
+    def get_received_tiles(self):
+        """
+        Gets number of received tiles
+
+        Returns
+        -------
+        int
+            Tiles received and reported
+        """
+        return sum(self.__bitmap__)
 
     def __repr__(self):
         return "".join(["1" if i else "0" for i in self.__bitmap__])

@@ -72,6 +72,40 @@ class TestBitmap(TestCase):
             ]) % protocol_to_use.L2_WORD) + protocol_to_use.L2_WORD - 1,
             sum(compressed_bitmap), "Wrong compression")
 
+    def test_has_missing(self):
+        protocol = LoRaWAN(LoRaWAN.ACK_ON_ERROR)
+        bitmap = Bitmap(protocol)
+        self.assertFalse(bitmap.has_missing(), "Bitmap full False has missing")
+        bitmap.tile_received(protocol.WINDOW_SIZE - 1)
+        self.assertFalse(bitmap.has_missing(), "Bitmap first one has missing")
+        for i in range(5):
+            bitmap.tile_received(protocol.WINDOW_SIZE - (i + 2))
+        self.assertFalse(bitmap.has_missing(), "Bitmap first ones has missing")
+        for i in range(5):
+            bitmap.tile_received(protocol.WINDOW_SIZE - (i + 10))
+        self.assertTrue(bitmap.has_missing(), "Bitmap has missing not reported")
+        for i in range(5):
+            bitmap.tile_received(protocol.WINDOW_SIZE - (i + 20))
+        self.assertTrue(bitmap.has_missing(), "Bitmap has missing not reported (second case)")
+        for i in range(protocol.WINDOW_SIZE):
+            bitmap.tile_received(protocol.WINDOW_SIZE - (i + 1))
+        self.assertFalse(bitmap.has_missing(), "Bitmap full True has missing")
+
+    def test_get_missing(self):
+        protocol = LoRaWAN(LoRaWAN.ACK_ON_ERROR)
+        bitmap = Bitmap(protocol)
+        self.assertEqual(0, bitmap.get_missing(), "fcn = False, after = None")
+        bitmap.tile_received(protocol.WINDOW_SIZE - 5)  # 63 - 5 = 58, index = 4
+        self.assertEqual(0, bitmap.get_missing(), "fcn = False, after = None (with one tile)")
+        self.assertEqual(7, bitmap.get_missing(after=6), "fcn = False, after = 6 (with one tile)")
+        self.assertEqual(56, bitmap.get_missing(fcn=True, after=57), "fcn = True, after = 57 (with one tile)")
+        for i in range(5):
+            bitmap.tile_received(protocol.WINDOW_SIZE - (i + 1))
+        self.assertEqual(5, bitmap.get_missing(), "fcn = False, after = None (with six tiles)")
+        self.assertEqual(57, bitmap.get_missing(fcn=True), "fcn = True, after = None (with six tiles)")
+        self.assertEqual(5, bitmap.get_missing(after=4), "fcn = False, after = 4 (with one tile)")
+        self.assertEqual(57, bitmap.get_missing(fcn=True, after=62), "fcn = True, after = 55 (with one tile)")
+
 
 if __name__ == '__main__':
     main()

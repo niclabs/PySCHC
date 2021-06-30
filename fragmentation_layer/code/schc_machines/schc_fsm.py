@@ -1,6 +1,6 @@
 """ schc_fsm: SCHC Finite State Machine Abstract Class """
 
-import logging
+import datetime
 from machine import Timer
 from schc_base import AttemptsCounter, Bitmap
 from schc_messages import SCHCMessage
@@ -9,7 +9,7 @@ from schc_protocols import SCHCProtocol
 
 class SCHCFiniteStateMachine:
     """
-    Finite State Machine of Sender/Receiver (Fragmenter/Ensembler)
+    Finite State Machine of Sender/Receiver (Fragmenter/Reassembler)
     behaviours
 
     Attributes
@@ -62,15 +62,19 @@ class SCHCFiniteStateMachine:
             """
             SCHC Logger to log SCHC Fragmentation
             """
-            def __init__(self, state) -> None:
+            TAG = "{mode}::[{datetime}]::"
+
+            def __init__(self, state):
                 self.__state__ = state
                 return
 
-            def __log__(self, mode) -> None:
-                mode("SCHC Fragment on '{}' mode, {} on '{}' state".format(
-                    self.__state__.sm.__mode__,
-                    self.__state__.sm.__type__,
-                    self.__state__.__name__
+            def __log__(self, mode):
+                print(
+                    self.TAG.format(mode=mode, datetime=datetime.datetime.now()) +
+                    "SCHC Fragment on '{}' mode, {} on '{}' state".format(
+                        self.__state__.sm.__mode__,
+                        self.__state__.sm.__type__,
+                        self.__state__.__name__
                 ))
                 second_line = "\tProtocol: {}, Rule ID: {}".format(
                     self.__state__.sm.protocol.__name__,
@@ -80,7 +84,7 @@ class SCHCFiniteStateMachine:
                     second_line += ", DTag: {}".format(
                         self.__state__.sm.__dtag__
                     )
-                mode(second_line)
+                print(second_line)
                 return
 
             def enter_state(self):
@@ -91,7 +95,7 @@ class SCHCFiniteStateMachine:
                 -------
                 None
                 """
-                self.__log__(logging.debug)
+                self.__log__("DEBUG")
                 return
 
             def schc_message(self, message):
@@ -108,7 +112,7 @@ class SCHCFiniteStateMachine:
                 None
                 """
                 self.enter_state()
-                logging.debug("\tMessage:\n{}".format(message.as_text()))
+                print("\tMessage:\n{}".format(message.as_text()))
                 return
 
             def error(self, message):
@@ -124,8 +128,8 @@ class SCHCFiniteStateMachine:
                 -------
                 None
                 """
-                self.__log__(logging.error)
-                logging.error("\t{}".format(message))
+                self.__log__("ERROR")
+                print("\t{}".format(message))
                 return
 
             def warning(self, message):
@@ -141,8 +145,8 @@ class SCHCFiniteStateMachine:
                 -------
                 None
                 """
-                self.__log__(logging.warning)
-                logging.warning("\t{}".format(message))
+                self.__log__("WARNING")
+                print("\t{}".format(message))
                 return
 
             def debug(self, message):
@@ -158,8 +162,8 @@ class SCHCFiniteStateMachine:
                 -------
                 None
                 """
-                self.__log__(logging.debug)
-                logging.debug("\t{}".format(message))
+                self.__log__("DEBUG")
+                print("\t{}".format(message))
                 return
 
             def info(self, message):
@@ -175,8 +179,8 @@ class SCHCFiniteStateMachine:
                 -------
                 None
                 """
-                self.__log__(logging.info)
-                logging.info("\t{}".format(message))
+                self.__log__("INFO")
+                print("\t{}".format(message))
                 return
 
         def __init__(self, state_machine):
@@ -197,7 +201,7 @@ class SCHCFiniteStateMachine:
 
         def generate_message(self, mtu):
             """
-            Generates a SCHC message to send
+            Message to send by default: Sends enqueue messages
 
             Parameters
             ----------
@@ -211,10 +215,22 @@ class SCHCFiniteStateMachine:
 
             Raises
             ------
-            GeneratorExit
-                No more SCHC Message to send on current state
+            SystemExit :
+                Raises a SystemExit with error code -1
             """
-            raise GeneratorExit("No more message to send")
+            if len(self.sm.message_to_send) != 0:
+                message = self.sm.message_to_send.pop(0)
+                if (message.size // 8) > mtu:
+                    self.sm.message_to_send.insert(0, message)
+                    self._logger_.warning(
+                        "Cannot send message, no bandwidth available. MTU = {} < Message size = {}".format(
+                            mtu, message.size // 8
+                        )
+                    )
+                self._logger_.schc_message(message)
+                return message
+            else:
+                return None
 
         def receive_message(self, message):
             """
@@ -346,6 +362,22 @@ class SCHCFiniteStateMachine:
             """
             raise SystemExit(self.sm.__end_msg__)
 
+        def on_expiration_time(self, alarm) -> None:
+            """
+            Behaviour on time expiration
+
+            Parameters
+            ----------
+            alarm : Timer
+                Alarm that triggers expiration
+
+            Returns
+            -------
+            None
+            """
+            self.sm.__active__ = False
+            return
+
     def __init__(self, protocol, dtag=None):
         """
         Constructor
@@ -379,6 +411,7 @@ class SCHCFiniteStateMachine:
         self.__exit_msg__ = ""
         self.__end_msg__ = ""
         self.message_to_send = list()
+        self.__active__ = True
         return
 
     def receive_message(self, message):
@@ -434,3 +467,6 @@ class SCHCFiniteStateMachine:
         """
         self.state.on_expiration_time(alarm)
         return
+
+    def is_active(self):
+        return self.__active__
