@@ -2,8 +2,9 @@ from network import LoRa
 import socket
 import binascii
 import struct
+import time
 
-from message import SHORT_MESSAGE as MESSAGE
+from message import MESSAGE as MESSAGE
 from schc_handlers import SCHCNodeHandler
 from schc_protocols import SCHCProtocol
 
@@ -38,5 +39,7 @@ s = socket.socket(socket.AF_LORA, socket.SOCK_RAW)
 s.setsockopt(socket.SOL_LORA, socket.SO_DR, 0)
 
 handler = SCHCNodeHandler(SCHCProtocol.LoRaWAN, 51)
+
+# send message
 handler.send_package(MESSAGE)
 handler.start(s)

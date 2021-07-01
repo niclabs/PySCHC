@@ -1,7 +1,11 @@
 """ timer: Timer class """
 
-from machine import Timer
+import sys
 
+if sys.implementation.name == "micropython":
+    from machine import Timer
+else:
+    from lopy_machine import Timer
 
 class SCHCTimer:
     """

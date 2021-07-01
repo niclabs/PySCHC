@@ -37,7 +37,12 @@ class SCHCNodeHandler(SCHCHandler):
             for rule_id in self.__sessions__.keys():
                 for dtag in self.__sessions__[rule_id].keys():
                     machine = self.__sessions__[rule_id][dtag]
-                    message = machine.generate_message(self.__mtu__)
+                    try:
+                        message = machine.generate_message(self.__mtu__)
+                    except SystemExit as e:
+                        print(e)
+                        self.__sessions__[rule_id].pop(dtag)
+                        return
 
                     if message is not None:
                         s.setblocking(True)
