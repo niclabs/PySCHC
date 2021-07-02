@@ -1,9 +1,6 @@
 """ ack_on_error_receiver: AckOnError receiver state machine """
 
-if sys.implementation.name == "micropython":
-    from machine import Timer
-else:
-    from lopy_machine import Timer
+from lopy_machine import Timer
 
 from schc_base import Bitmap, Tile
 from schc_machines import SCHCReceiver
