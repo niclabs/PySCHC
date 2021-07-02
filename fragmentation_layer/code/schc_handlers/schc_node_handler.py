@@ -5,11 +5,40 @@ from schc_protocols import LoRaWAN, SCHCProtocol
 
 
 class SCHCNodeHandler(SCHCHandler):
+    """
+    SCHC Node Handler
+    Concrete class to be used as API for sending messages
+    using SCHC Protocols on a Node
+    """
 
     def __init__(self, protocol, mtu):
+        """
+        Constructor
+
+        Parameters
+        ----------
+        protocol
+        mtu
+
+        See Also
+        --------
+        SCHCHandler
+        """
         super().__init__(protocol, mtu)
 
     def send_package(self, packet):
+        """
+        Load package to send
+
+        Parameters
+        ----------
+        packet : bytes
+            Packet to be fragmented
+
+        Returns
+        -------
+        None
+        """
         if self.__protocol__.id == SCHCProtocol.LoRaWAN:
             from schc_machines.lorawan import AckOnErrorSender
             self.assign_session(LoRaWAN.ACK_ON_ERROR, None, AckOnErrorSender(LoRaWAN(LoRaWAN.ACK_ON_ERROR), packet))
@@ -17,6 +46,22 @@ class SCHCNodeHandler(SCHCHandler):
             raise NotImplementedError("Just LoRaWAN implemented")
 
     def receive(self, rule_id, dtag, message):
+        """
+        Defines behaviour after receiving a message
+
+        Parameters
+        ----------
+        rule_id : int
+            Rule id of received message
+        dtag : int or None
+            DTag of received message
+        message : bytes
+            Message receive
+
+        Returns
+        -------
+        None
+        """
         if self.__protocol__.id == SCHCProtocol.LoRaWAN:
             if rule_id == LoRaWAN.ACK_ALWAYS:
                 # message received
@@ -33,6 +78,19 @@ class SCHCNodeHandler(SCHCHandler):
             raise NotImplementedError("Just LoRaWAN implemented")
 
     def start(self, s):
+        """
+        Starts communication, by separating message in fragments
+        and send them to Gateway
+
+        Parameters
+        ----------
+        s : socket
+            A socket
+
+        Returns
+        -------
+        None
+        """
         while True:
             for rule_id in self.__sessions__.keys():
                 for dtag in self.__sessions__[rule_id].keys():
