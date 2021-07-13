@@ -37,7 +37,7 @@ class SCHCGatewayHandler(SCHCHandler):
             used_callback = on_receive_callback
         else:
             used_callback = lambda msg: print("Message received", msg)
-        
+
         def create_after_processing_callback(rule_id, dtag):
             def after_reassembly_processing(msg_bytes):
                 # TODO decompress before calling callback
@@ -95,7 +95,7 @@ class SCHCGatewayHandler(SCHCHandler):
                 # message received
                 from schc_machines.lorawan import AckOnErrorReceiver
                 self.assign_session(rule_id, dtag, AckOnErrorReceiver(
-                        LoRaWAN(LoRaWAN.ACK_ON_ERROR), 
+                        LoRaWAN(LoRaWAN.ACK_ON_ERROR),
                         on_success=self.callback_creator(rule_id, dtag)))
                 self.__sessions__[rule_id][dtag].receive_message(message)
             elif rule_id == LoRaWAN.ACK_ALWAYS:
@@ -107,7 +107,7 @@ class SCHCGatewayHandler(SCHCHandler):
         else:
             raise NotImplementedError("Just LoRaWAN implemented")
 
-    def handle(self, message, f_port=None, url=None, dev_id=None):
+    def handle(self, message, f_port=None, url=None, dev_id=None, api_key=None):
         """
         Handles a reception of SCHCMessages
 
@@ -136,13 +136,14 @@ class SCHCGatewayHandler(SCHCHandler):
         if url is None:
             return response
         elif response is not None:
-            post_obj = {
-                "dev_id": dev_id,
-                "port": f_port,
-                "confirmed": False,
-                "payload_raw": base64.b64encode(response[1:]).decode("utf-8")
+            internal_obj = {
+                "f_port": f_port,
+                "priority": "NORMAL",
+                "frm_payload": base64.b64encode(response[1:]).decode("utf-8")
             }
-            r = requests.post(url, data=json.dumps(post_obj), headers={'content-type': 'application/json'})
+            post_obj = {"downlinks":[internal_obj]}
+            headers = {'content-type': 'application/json','Authorization': 'Bearer {}'.format(api_key),'User-Agent':'myint'}
+            r = requests.post(url, data=json.dumps(post_obj), headers=headers)
 
     def generate_message(self, rule_id, dtag, mtu=512):
         """

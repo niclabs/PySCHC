@@ -103,7 +103,7 @@ class AckOnErrorSender(SCHCSender):
                 self._logger_.schc_message(all1)
                 return all1
             regular_message.add_padding()
-            self._logger_.schc_message(regular_message)
+            #self._logger_.schc_message(regular_message)
             return regular_message
 
         def receive_schc_ack(self, schc_message):
