@@ -63,13 +63,13 @@ class SCHCGatewayHandler(SCHCHandler):
         if url is None:
             return response
         elif response is not None:
-            post_obj = {
-                "dev_id": dev_id,
-                "port": f_port,
-                "confirmed": False,
-                "payload_raw": base64.b64encode(response[1:]).decode("utf-8")
+            internal_obj = {
+                "f_port": f_port,
+                "priority": "NORMAL",
+                "frm_payload": base64.b64encode(response[1:]).decode("utf-8")
             }
-            headers = {'content-type': 'application/json','Authorization': api_key}
+            post_obj = {"downlinks":[internal_obj]}
+            headers = {'content-type': 'application/json','Authorization': 'Bearer {}'.format(api_key),'User-Agent':'myint'}
             r = requests.post(url, data=json.dumps(post_obj), headers=headers)
 
     def generate_message(self, rule_id, dtag, mtu=512):
