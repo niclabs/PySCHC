@@ -11,8 +11,27 @@ from schc_protocols import LoRaWAN, SCHCProtocol
 
 
 class SCHCGatewayHandler(SCHCHandler):
+    """
+    SCHC Gateway Handler
+    To be used as an API on Gateway side of communication
+
+    Attributes
+    ----------
+    callback_creator : Callable
+        A function to be used on reassembled message
+    """
 
     def __init__(self, protocol, mtu, on_receive_callback=None):
+        """
+        Constructor
+
+        Parameters
+        ----------
+        protocol
+        mtu
+        on_receive_callback : Callable
+            A function to be used when message is reassembled
+        """
         super().__init__(protocol, mtu)
         if on_receive_callback:
             used_callback = on_receive_callback
@@ -29,6 +48,25 @@ class SCHCGatewayHandler(SCHCHandler):
         self.callback_creator = create_after_processing_callback
 
     def send_package(self, packet):
+        """
+        Load package to send
+
+        Parameters
+        ----------
+        packet : bytes
+            Packet to be fragmented
+
+        Returns
+        -------
+        None
+        Parameters
+        ----------
+        packet
+
+        Returns
+        -------
+
+        """
         if self.__protocol__.id == SCHCProtocol.LoRaWAN:
             from schc_machines.lorawan import AckAlwaysSender
             self.assign_session(LoRaWAN.ACK_ALWAYS, None, AckAlwaysSender(LoRaWAN(LoRaWAN.ACK_ALWAYS), packet))
@@ -36,6 +74,22 @@ class SCHCGatewayHandler(SCHCHandler):
             raise NotImplementedError("Just LoRaWAN implemented")
 
     def receive(self, rule_id, dtag, message):
+        """
+        Defines behaviour after receiving a message
+
+        Parameters
+        ----------
+        rule_id : int
+            Rule id of received message
+        dtag : int or None
+            DTag of received message
+        message : bytes
+            Message receive
+
+        Returns
+        -------
+        None
+        """
         if self.__protocol__.id == SCHCProtocol.LoRaWAN:
             if rule_id == LoRaWAN.ACK_ON_ERROR:
                 # message received
@@ -54,6 +108,25 @@ class SCHCGatewayHandler(SCHCHandler):
             raise NotImplementedError("Just LoRaWAN implemented")
 
     def handle(self, message, f_port=None, url=None, dev_id=None, api_key=None):
+        """
+        Handles a reception of SCHCMessages
+
+        Parameters
+        ----------
+        message : bytes
+            A message received
+        f_port : int, optional
+            In case of using LoRaWAN, rule id to handled message
+        url : str, optional
+            In case of using LoRaWAN, url to send answer
+        dev_id : str, optional
+            In case of using LoRaWAN, unique identifier of device
+            that sent the received message
+
+        Returns
+        -------
+        None
+        """
         if self.__protocol__.id == SCHCProtocol.LoRaWAN:
             r, d = self.identify_session_from_message(message, f_port)
             self.receive(r, d, bytes([f_port]) + message)
@@ -73,6 +146,23 @@ class SCHCGatewayHandler(SCHCHandler):
             r = requests.post(url, data=json.dumps(post_obj), headers=headers)
 
     def generate_message(self, rule_id, dtag, mtu=512):
+        """
+        Generates a message to response
+
+        Parameters
+        ----------
+        rule_id : int
+            Rule id to identify session
+        dtag : int
+            Dtag to identify session
+        mtu : mtu, optional
+            MTU to use. Default 512 bytes
+
+        Returns
+        -------
+        bytes
+            Response to be send as bytes
+        """
         message = self.__sessions__[rule_id][dtag].generate_message(mtu)
         if message is None:
             return message
