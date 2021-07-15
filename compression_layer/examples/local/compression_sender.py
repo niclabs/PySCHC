@@ -1,6 +1,7 @@
-import socket, binascii
+import socket, binascii, sys
 
-from PacketGenerator import PacketGenerator
+sys.path.insert(0, "../../code")
+
 from SCHC_Compressor import SCHC_Compressor
 from SCHC_RuleManager import SCHC_RuleManager
 from common import *

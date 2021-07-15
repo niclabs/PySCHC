@@ -1,4 +1,6 @@
-import socket, binascii
+import socket, binascii, sys
+
+sys.path.insert(0, "../../code")
 
 from SCHC_Decompressor import SCHC_Decompressor
 from SCHC_RuleManager import SCHC_RuleManager

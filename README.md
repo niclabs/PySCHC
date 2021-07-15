@@ -4,7 +4,9 @@ Code of SCHC protocol implemented in Python to be loaded on a [PyCOM](https://py
 
 ## Compression
 
-<Anoten lo que necesiten>
+<requires pycryptodome>
+<make code install like library>
+<Not finished, port to be lopy compatible, refactor parser to be selected programatically (like lpwan protocol in fragmentation)>
 
 ## Fragmentation Layer
 
