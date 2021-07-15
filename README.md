@@ -6,13 +6,15 @@ Code of SCHC protocol implemented in Python to be loaded on a [PyCOM](https://py
 
 <Anoten lo que necesiten>
 
-## Fragmentation
+## Fragmentation Layer
 
-### On Local computer
+### Example on local computer
+
+The following steps indicate how to run an example where the sender and the receiver are on the same machine and a message is sent with the `ACK-On-Error` mode specified in the LoRaWAN profile. A successful run means everything is working as intended.
 
 #### Installation
 
-1. (Opcional) Create a new virtual environment to install Fragmentation package.
+1. (Optional) Create a new virtual environment to install Fragmentation package.
 
    Using [`conda`](https://docs.conda.io/en/latest/):
 
@@ -35,9 +37,7 @@ Code of SCHC protocol implemented in Python to be loaded on a [PyCOM](https://py
    .\niclabs-schc\env\Scripts\activate
    ````
 
-2. It is supposed that no package is needed, due to code is going to run on `LoPy`. Server side could have further requirements, but local example simulates Gateway/Node just using sockets.
-
-3. Install `fragmentation_layer` code on virtual environment
+2. Install `fragmentation_layer` code on virtual environment
 
    ````bash
    cd fragmentation_layer/code
@@ -53,12 +53,12 @@ Code of SCHC protocol implemented in Python to be loaded on a [PyCOM](https://py
 
 #### Execution of example
 
-In two different terminal, one for the receiver and other for the sender.
+Open two different terminals, one for the receiver and other for the sender.
 
 For the receiver (execute first):
 
 ````bash
-cd example
+cd examples/local
 python test_receiver.py
 
 # To save logs on a file
@@ -68,7 +68,7 @@ python test_receiver.py 2> `<name_of_file>`
 For the sender (execute in less than [`INACTIVITY_TIMER`](https://github.com/niclabs/PySCHC/blob/master/fragmentation_layer/code/schc_protocols/lorawan.py) seconds):
 
 ````bash
-cd example
+cd examples/local
 python test_sender.py
 
 # To save logs on a file

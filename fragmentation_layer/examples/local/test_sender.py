@@ -1,14 +1,14 @@
-""" test_schc_protocol: SCHC Protocol unit test class """
+""" test_sender: Test script Sender side"""
 
-from binascii import crc32
-from random import seed, choices, choice
-from unittest import TestCase, main
-from schc_base import SCHCObject
-from schc_protocols import LoRaWAN
+import logging
+import socket
 
-SEED = 7
-SHORT_MESSAGE = "This is a short message".encode("ascii")
-LONG_MESSAGE = """
+from common_methods import messaging_loop, HOST
+
+RECEIVER_PORT = 50007
+SENDER_PORT = 50006
+
+MESSAGE = """
 Abstract
 
    The Static Context Header Compression (SCHC) specification describes
@@ -53,36 +53,22 @@ Copyright Notice
    the Trust Legal Provisions and are provided without warranty as
    described in the Simplified BSD License.
 """.encode("ascii")
-WORD_LENGTHS = [10, 200, int(1e3)]
 
+RESIDUE = "0101100"
 
-class TestSCHCProtocol(TestCase):
-
-    def test_crc32_static_message(self) -> None:
-        short = SCHCObject.bytes_2_bits(SHORT_MESSAGE)
-        library = hex(crc32(SCHCObject.bits_2_bytes(short)))
-        local = LoRaWAN().calculate_rcs(short)
-        self.assertEqual(library, local, "Short message crc32 do not match")
-        long = SCHCObject.bytes_2_bits(LONG_MESSAGE)
-        library = hex(crc32(SCHCObject.bits_2_bytes(long)))
-        local = LoRaWAN().calculate_rcs(long)
-        self.assertEqual(library, local, "Long message crc32 do not match")
-
-    def test_crc32_random(self) -> None:
-        seed(SEED)
-        import string
-        for _ in range(100):
-            a_word = "".join(
-                choices(string.ascii_letters, k=choice(WORD_LENGTHS))
-            ).encode("ascii")
-            word = SCHCObject.bytes_2_bits(a_word)
-            library = hex(crc32(SCHCObject.bits_2_bytes(word)))
-            local = LoRaWAN().calculate_rcs(word)
-            self.assertEqual(
-                library, local,
-                "Random message {} crc32 do not match".format(a_word)
-            )
+socket_rx = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+socket_rx.settimeout(1)
+socket_rx.bind((HOST, RECEIVER_PORT))
+socket_rx.listen(1)
 
 
 if __name__ == '__main__':
-    main()
+    from schc_machines.lorawan import AckOnErrorSender
+    from schc_protocols import LoRaWAN
+
+    sender = AckOnErrorSender(
+        LoRaWAN(LoRaWAN.ACK_ON_ERROR),
+        MESSAGE
+    )
+
+    messaging_loop(sender, socket_rx, SENDER_PORT)
