@@ -2,9 +2,46 @@
 
 Code of SCHC protocol implemented in Python to be loaded on a [PyCOM](https://pycom.io/) device.
 
-## Compression
+## Compression Layer
 
-<requires pycryptodome>
+The compression layer has not been tested in LoPy and should be considered unfinished. The following example indicates how to run an example where the sender and the receiver are on the same machine and the message is a IPv6 packet. There is currently no integration with the fragmentation layer.
+
+### Example on local computer
+
+Before running the example, the `pycryptodome` library must be installed.
+
+#### Execution of example
+
+Open two different terminals, one for the receiver and other for the sender.
+
+For the receiver (execute first):
+
+````bash
+cd compression_layer/examples/local
+python compression_receiver.py
+````
+
+For the sender:
+
+````bash
+cd compression_layer/examples/local
+python compression_sender.py
+````
+
+This will send a SCHC Packet from sender to receiver through the socket `localhost:8099`. The IPv6 packet that is sent is in `packets/demo.txt` and after succesfully being decompressed is saved in `packets/demo2.txt`.
+
+### Future work
+
+There are a few main tasks to be adressed before this layer is considered complete:
+
+1. **Create an installation script**: This layer must be installed as a library, similarly to the fragmentation layer.
+
+2. **Refactor Protocol Parser**: Currently, this layer only supports an IPv6 for compression (SCHC_Parser.py) with no easy way to specify other protocols. The protocol selection must be dynamic on library initialization (see protocol selection on fragmentation layer).
+
+3. **Test and adjust LoPy compatibility**: This layer has to run on LoPy alongside the fragmentation layer.
+
+4. **Integration with fragmentation**: compressed packets must be delivered and received from the fragmetation layer. This is likely more direct if done from the fragmentation layer's side.
+
 <make code install like library>
 <Not finished, port to be lopy compatible, refactor parser to be selected programatically (like lpwan protocol in fragmentation)>
 
